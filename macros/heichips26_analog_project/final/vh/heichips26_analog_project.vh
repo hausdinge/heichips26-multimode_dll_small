@@ -7,13 +7,13 @@ module heichips26_analog_project (
     inout analog_0,
     inout analog_1,
     inout analog_2,
-    inout clk,
-    inout ena,
-    inout rst_n,
-    inout [7:0] ui_in,
-    inout [7:0] uio_in,
-    inout [7:0] uio_oe,
-    inout [7:0] uio_out,
-    inout [7:0] uo_out
+    input clk,
+    input ena,
+    input rst_n,
+    input [7:0] ui_in,
+    input [7:0] uio_in,
+    output [7:0] uio_oe,
+    output [7:0] uio_out,
+    output [7:0] uo_out
 );
 endmodule
