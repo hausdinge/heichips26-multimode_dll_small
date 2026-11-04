@@ -1,4 +1,4 @@
-* HeiChips 2026 template - ngspice user init file
+* Small DLL project - interactive ngspice startup
 * The nix shell exports SPICE_USERINIT_DIR pointing at this directory, so every
 * ngspice run (including interactive ones started from xschem) loads this file.
 * Requires PDK_ROOT and PDK to be exported (see the root README).

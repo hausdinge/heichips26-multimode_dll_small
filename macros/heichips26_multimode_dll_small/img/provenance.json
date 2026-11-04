@@ -1,0 +1,30 @@
+{
+  "run_tag": "CELLMAP_20261104_1038",
+  "sources_sha256": {
+    "build/CELLMAP_20261104_1038/verification/placement.json": "4447c202a4f2de75170177f6e03ae51436bc57a2d21abbdeb56a267d7b5cf057",
+    "build/CELLMAP_20261104_1038/views/odb/heichips26_multimode_dll_small.odb": "e74aaab4530d3c3f0b441f9d15bb03a77125f8afbb8472344ecb0c73ba7f36c3",
+    "scripts/export_placement.py": "6bb68ecf0c91308f0998225d462fb42da94c4e91eeb66ba4f13f322d40a8bd80",
+    "build/CELLMAP_20261104_1038/simulation/ngspice/schematic/summary.json": "f99e62411865c0d47aed1bc9478b1136d357468f50b9bbf2a7343e2ea34cfd68",
+    "build/CELLMAP_20261104_1038/simulation/ngspice/schematic/tt_trim00/waveform.dat": "536c2145cd010e8dcd885a1e9fd0f822fc7430bac0826a94e74534db85732378",
+    "build/CELLMAP_20261104_1038/simulation/ngspice/routed/summary.json": "82720e98e975a76f3838d61963a5b00bbaf510b4f01e1d5a06ebff4e02b11236",
+    "build/CELLMAP_20261104_1038/simulation/ngspice/routed/tt_trim00/waveform.dat": "3b2ea79b7d44aff571f667ea01dcc0ab41d4b5fd8291e69fa05f12308487eca2",
+    "build/CELLMAP_20261104_1038/simulation/ngspice/routed_transitions/summary.json": "9a09c9ec056870a8d04c4062bb0d8080f568096c1aa3e99ff3694860869f03be",
+    "build/CELLMAP_20261104_1038/simulation/ngspice/routed_transitions/tt_trim00_01_10ns/waveform.dat": "5b70ed0834e319966ea99f37e4ed6cdaa75d1c4ea66afbd41f888203261a0000",
+    "build/CELLMAP_20261104_1038/simulation/ngspice/routed_transitions/config.json": "5c2a7b379733ce81c97e5fba57193bdfd6197e1657f3d5bd54349e6bd0905c7c",
+    "build/CELLMAP_20261104_1038/simulation/verilog/rtl_wave/waveform.vcd": "3e11f5cea453ffba1f54ef7abf66fffdd0ae340fe739a9661f39f393ffd86dca",
+    "build/CELLMAP_20261104_1038/simulation/verilog/gl_wave/waveform.vcd": "873828903a35bfaf8fbee8e96437c0e1448453d6770c0df28574b920239cc9d5",
+    "scripts/report.py": "02ac43cb996ef1aaa33d805aa1513fbe698560b2b7f5866c6682fc6afbf8c4d5"
+  },
+  "outputs_sha256": {
+    "routed_frequency.png": "84d24cd3d2a424953325504bc76389504526f00e089f8aee273c46f41239977c",
+    "trim_transition.png": "86b71c3f333cd9226e99583a0a71c50f80b4980c4967d29a407527673b7a41c1",
+    "routed_startup.png": "fdc18b00ae3fb273f722be5a9f87204529775646c6426305893f41276a7fab33",
+    "gl_waveform.png": "5c1b18ea54302f4cf22914830e537b45bbb66039dfcccd1f7182a90dae28efcc",
+    "schematic_frequency.png": "9a0606deb2e0e00dbd4ceb882a210f557bbd1364a341797814870a137a92a598",
+    "schematic_startup.png": "2dead5dec73aff7f9030085a74cf756b77a24746daaef89d9347e05b35d78ae1",
+    "placement.png": "c9cc955ad70bfacb07eb6443bea59e31d60656d97d58bbe5aad869979fb96aa9",
+    "rtl_waveform.png": "1b95ce1234cf7d5340ebd815c9782f0940e3087034877514f26921d81841c6ed",
+    "architecture.svg": "27b6420220cb28fd96a295922a0ac824af8b9f5c14c8543b8cf6705e64b0ad8f",
+    "architecture.png": "2ea3f351f9bf7293421bff953acebc8e06d87bbb70fc6d6ae91377b53e758a54"
+  }
+}

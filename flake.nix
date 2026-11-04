@@ -64,12 +64,8 @@
               # Waveform viewing
               gtkwave
 
-              # FPGA prototyping
-              #yosys # already in LibreLane
-              nextpnr
-              icestorm
-              trellis
-              openfpgaloader
+              # Documentation diagrams
+              graphviz
 
               # Analog
               xschem

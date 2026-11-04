@@ -1,44 +1,47 @@
-// SPDX-FileCopyrightText: © 2026 XXX Authors
 // SPDX-License-Identifier: Apache-2.0
-
-// Adapted from the Tiny Tapeout template
-
 `default_nettype none
+`include "cell_map.v"
+`include "graded_fll_controller.v"
+`include "ring_oscillator.v"
+`include "output_divider.v"
+`include "multimode_dll_small.v"
 
 module heichips26_multimode_dll_small (
 `ifdef USE_POWER_PINS
-    inout  wire VPWR,
-    inout  wire VGND,
+    inout wire VPWR,
+    inout wire VGND,
 `endif
-    input  wire [7:0] ui_in,    // Dedicated inputs
-    output wire [7:0] uo_out,   // Dedicated outputs
-    input  wire [7:0] uio_in,   // IOs: Input path
-    output wire [7:0] uio_out,  // IOs: Output path
-    output wire [7:0] uio_oe,   // IOs: Enable path (active high: 0=input, 1=output)
-    input  wire       ena,      // always 1 when the design is powered, so you can ignore it
-    input  wire       clk,      // clock
-    input  wire       rst_n     // reset_n - low to reset
+    input wire [7:0] ui_in,
+    output wire [7:0] uo_out,
+    input wire [7:0] uio_in,
+    output wire [7:0] uio_out,
+    output wire [7:0] uio_oe,
+    input wire ena,
+    input wire clk,
+    input wire rst_n,
+    output wire analog_0,
+    output wire analog_1,
+    output wire analog_2
 );
-
-    // List all unused inputs to prevent warnings
-    wire _unused = &{ena, ui_in[7:1], uio_in[7:1]};
-    
-    logic [7:0] count;
-    
-    counter counter_0 (
-    `ifdef USE_POWER_PINS
-        .VPWR  (VPWR),
-        .VGND  (VGND),
-    `endif
-        .clk_i    (clk),
-        .rst_ni   (rst_n),
-        .enable_i (ui_in[0]),
-
-        .count_o  (count)
+    // Fifteen parallel configuration bits, low field first:
+    // multiply = ui_in[4:0], divide0 = {uio_in[1:0], ui_in[7:5]},
+    // divide1 = uio_in[6:2]. uio_in[7] is reserved.
+    wire [14:0] config_bits = {uio_in[6:0], ui_in};
+    wire clk0, clk1, stable;
+    multimode_dll_small u_dll (
+        .clk(clk), .resetb(rst_n), .enable(ena),
+        .multiply(config_bits[4:0]), .divide0(config_bits[9:5]),
+        .divide1(config_bits[14:10]), .clk0(clk0), .clk1(clk1), .stable(stable)
     );
-    
-    assign uo_out  = count;
-    assign uio_out = count;
-    assign uio_oe  = '1;
-
+    // Dedicated physical buffers isolate fabric and pad loading.
+    (* keep *) clkbuf_8 u_fabric0 (.A(clk0), .X(uo_out[0]));
+    (* keep *) clkbuf_8 u_fabric1 (.A(clk1), .X(uo_out[1]));
+    (* keep *) clkbuf_8 u_pad0 (.A(clk0), .X(analog_0));
+    (* keep *) clkbuf_8 u_pad1 (.A(clk1), .X(analog_1));
+    assign uo_out[7:2] = {5'b0, stable};
+    assign uio_out = 8'b0;
+    assign uio_oe = 8'b0;
+    assign analog_2 = 1'b0;
+    wire unused = uio_in[7];
 endmodule
+`default_nettype wire

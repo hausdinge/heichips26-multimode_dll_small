@@ -458,7 +458,8 @@ def main(
         sys.exit(1)
     input_header = header[0]
     
-    design_dir = "."
+    design_dir = "build/precheck"
+    pathlib.Path(design_dir).mkdir(parents=True, exist_ok=True)
 
     info(f"top_cell: {top_cell}")
     info(f"slot: {slot}")

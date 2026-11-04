@@ -1,487 +1,358 @@
-# HeiChips26 Digital Project (ihp-sg13cmos5l)
+# Small multimode DLL
 
-<p align="center">
-  <a href="final/render/heichips26_digital_project.png">
-    <img src="final/render/heichips26_digital_project.png" alt="Render of the ihp-sg13cmos5l heichips26_digital_project layout" width=50%>
-  </a>
-  <br>
-  <em>Render of the ihp-sg13cmos5l heichips26_digital_project layout.</em>
-</p>
-
-This is the digital-on-top example project for the HeiChips 2026 Hackathon. The top-level `heichips26_digital_project` implements the standard chip interface (`ui_in`, `uo_out`, `uio_*`, `ena`, `clk`, `rst_n`) and embeds one hardened sub-macro, the 8-bit up [`counter`](macros/counter/README.md).
-
-
-## Directory Structure
-
-<details>
-<summary>Show Directory Structure</summary>
+A single tunable ring oscillator feeds two independent integer dividers.
+An FLL adjusts the oscillator's average frequency from one external reference.
+For normal output division codes (2–31), the target and average frequencies are:
 
 ```text
-📁 heichips26_digital_project/
-├─ 📁 final/
-│  ├─ 📁 gds/
-│  │  └─ heichips26_digital_project.gds
-│  ├─ 📁 lef/
-│  │  └─ heichips26_digital_project.lef
-│  ├─ 📁 lib/
-│  │  ├─ 📁 nom_fast_1p32V_m40C/
-│  │  ├─ 📁 nom_slow_1p08V_125C/
-│  │  └─ 📁 nom_typ_1p20V_25C/
-│  ├─ 📁 nl/
-│  │  └─ heichips26_digital_project.nl.v
-│  ├─ 📁 pnl/
-│  │  └─ heichips26_digital_project.pnl.v
-│  ├─ 📁 render/
-│  │  └─ heichips26_digital_project.png
-│  ├─ 📁 spef/
-│  │  └─ 📁 nom/
-│  └─ 📁 vh/
-│     └─ heichips26_digital_project.vh
-├─ 📁 flow/
-│  ├─ 📁 final/               # .gitignore'd — important files are copied to heichips26_digital_project/final/ (listed here to document LibreLane output folders)
-│  │  ├─ 📁 def/              # Design Exchange Format — cell placement & routing (text-based)
-│  │  ├─ 📁 gds/              # GDSII layout — final tape-out file
-│  │  ├─ 📁 json_h/           # Yosys JSON headers — machine-readable netlist for internal scripts
-│  │  ├─ 📁 klayout_gds/      # KLayout GDS — with extra visual-debug metadata
-│  │  ├─ 📁 lef/              # Library Exchange Format — abstract pin & blockage view for P&R
-│  │  ├─ 📁 lib/              # Liberty timing files — timing, power & area models
-│  │  ├─ 📁 mag/              # Magic layout files — used for DRC & GDS generation
-│  │  ├─ 📁 mag_gds/          # GDS generated/processed by Magic
-│  │  ├─ 📁 nl/               # Netlist — gate-level Verilog after synthesis
-│  │  ├─ 📁 odb/              # OpenDB — internal OpenROAD binary database (LEF+DEF combined)
-│  │  ├─ 📁 pnl/              # Powered Netlist — gate-level Verilog with explicit power pins (for LVS)
-│  │  ├─ 📁 render/           # Layout render images
-│  │  ├─ 📁 sdc/              # Synopsys Design Constraints — clock periods & timing requirements
-│  │  ├─ 📁 sdf/              # Standard Delay Format — timing delays for gate-level simulation
-│  │  ├─ 📁 spef/             # Standard Parasitic Exchange Format — RC parasitics from layout
-│  │  ├─ 📁 spice/            # SPICE netlist — for LVS & transistor-level simulation
-│  │  ├─ 📁 vh/               # Verilog headers — for hierarchy management & simulation inclusion
-│  │  ├─ metrics.csv          # Design metrics (area, power, timing slack, DRC/LVS) — spreadsheet
-│  │  └─ metrics.json         # Design metrics (area, power, timing slack, DRC/LVS) — JSON summary
-│  └─ 📁 librelane/
-│     ├─ config.yaml
-│     ├─ heichips26_template_large.def
-│     ├─ heichips26_template_small.def
-│     ├─ heichips26_template_small_analog.def
-│     ├─ heichips26_template_tiny.def
-│     ├─ heichips26_template_tiny_analog.def
-│     ├─ impl.sdc
-│     └─ signoff.sdc
-├─ 📁 fpga/
-│  ├─ 📁 arch/
-│  │  ├─ ecp5.mk
-│  │  ├─ gowin.mk
-│  │  ├─ ice40.mk
-│  │  └─ xilinx7.mk
-│  ├─ 📁 boards/
-│  │  ├─ basys3.mk
-│  │  ├─ boolean.mk
-│  │  ├─ icebreaker.mk
-│  │  ├─ nano9k.mk
-│  │  ├─ pico-ice.mk
-│  │  └─ ulx3s.mk
-│  ├─ 📁 design/
-│  │  ├─ 📁 basys3/
-│  │  ├─ 📁 boolean/
-│  │  ├─ 📁 icebreaker/
-│  │  ├─ 📁 nano9k/
-│  │  ├─ 📁 pico-ice/
-│  │  └─ 📁 ulx3s/
-│  ├─ dut.mk
-│  ├─ fpga.mk
-│  ├─ Makefile
-│  └─ README.md
-├─ 📁 macros/
-│  └─ 📁 counter/
-├─ 📁 netlist/
-│  ├─ 📁 nl/
-│  │  └─ heichips26_digital_project.nl.v
-│  ├─ 📁 pnl/
-│  │  └─ heichips26_digital_project.pnl.v
-│  └─ 📁 spice/
-│     └─ heichips26_digital_project.spice
-├─ 📁 rtl/
-│  └─ heichips26_digital_project.sv
-├─ 📁 scripts/
-│  ├─ sak-open.py
-│  └─ .sak-scripts-version
-├─ 📁 testbenches/
-│  ├─ 📁 cocotb/
-│  │  ├─ heichips26_digital_project_tb.gtkw
-│  │  └─ heichips26_digital_project_tb.py
-│  └─ 📁 verilog/
-│     ├─ heichips26_digital_project_tb.gtkw
-│     └─ heichips26_digital_project_tb.sv
-├─ 📁 verification/
-│  ├─ antenna_summary.rpt
-│  ├─ antenna_violations.rpt
-│  ├─ stapostpnr_summary.rpt
-│  ├─ stapostpnr_nom_fast_1p32V_m40C_power.rpt
-│  ├─ stapostpnr_nom_slow_1p08V_125C_power.rpt
-│  ├─ stapostpnr_nom_typ_1p20V_25C_power.rpt
-│  ├─ irdrop.rpt
-│  ├─ drc.magic.rpt
-│  ├─ drc.klayout.json
-│  ├─ lvs.netgen.rpt
-│  ├─ manufacturability.rpt
-│  ├─ stat.rpt
-│  ├─ yosys_post_dff.rpt
-│  ├─ yosys_pre_techmap.rpt
-│  └─ yosys_synth_check.rpt
-├─ Makefile
-└─ README.md
+target_f_ring = f_reference × multiply
+f_clk0 = f_ring / divide0
+f_clk1 = f_ring / divide1
 ```
 
-</details>
+The FLL regulates average frequency with finite resolution. The target must lie within the oscillator's physical tuning range. A shared
+source and common divider startup epoch make the two output clocks phase-related;
+the design does not lock their phase to the input clock. Unequal divisors give a
+repeating edge relationship, rather than a constant phase angle between different
+frequencies. Routing and cell delays introduce output skew.
 
+The implementation uses ordinary **SG13CMOS5L standard cells only**: buffers,
+inverters, logic gates, flip-flops and physical support cells. **No tri-state or
+dedicated delay-gate cells are permitted.** There is no global input divider,
+manual DCO port, phase selector, XOR mode, serial register, external clock-source selector, BusKit or
+external oscillator tap bus.
 
-## Sub-Macros
+![Single oscillator feeding the controller and two dividers](img/architecture.png)
 
-The `counter` is hardened as an own macro in [`macros/counter/`](macros/counter/) and integrated as a black box via the `MACROS` section in [`flow/librelane/config.yaml`](flow/librelane/config.yaml) (GDS, LEF, VH, LIB, SPEF views from `macros/counter/final/`).
+## Parallel configuration and ports
 
-**Build order matters**: if you modify the counter, run its own flow first (`make build-counter` from here, or equivalently `make -C macros/counter all`) so its `final/` views are up to date, then build this top level. The top-level `make all` does this automatically by running `build-macros` before `build-top`.
+The top is [heichips26_multimode_dll_small.sv](rtl/heichips26_multimode_dll_small.sv).
+It retains the fixed tiny analog template's interface. Fifteen configuration
+bits are packed as `{uio_in[6:0], ui_in[7:0]}`:
 
-You can also remove all sub-macros and implement your design as sea-of-gates only: delete `macros/`, remove the `MACROS` section from `flow/librelane/config.yaml`, and put your RTL into `rtl/`.
+| Input | Meaning |
+| --- | --- |
+| `clk` | Reference clock; no input divider |
+| `rst_n` | Active-low reset |
+| `ena` | Active-high oscillator/controller enable |
+| `ui_in[4:0]` | Global multiplier, 1–31; 0 is invalid and never asserts lock |
+| `{uio_in[1:0], ui_in[7:5]}` | Clock 0 divisor |
+| `uio_in[6:2]` | Clock 1 divisor |
+| `uio_in[7]` | Reserved, ignored |
 
+Each divisor uses **0 = bypass, 1 = stopped, 2–31 = divide by N**.
+Odd divisors extend the high pulse by half a source period for approximately
+50% duty cycle. Configuration is sampled while the counters are held reset;
+it is not an atomic interface for live asynchronous updates.
 
-## Makefile Targets
+| Output | Meaning |
+| --- | --- |
+| `uo_out[0]`, `analog_0` | Clock 0 through separate physical output buffers |
+| `uo_out[1]`, `analog_1` | Clock 1 through separate physical output buffers |
+| `uo_out[2]` | FLL lock status, asynchronous to the receiving fabric |
+| `uo_out[7:3]`, `uio_out`, `uio_oe`, `analog_2` | Constant zero |
 
-### Show Available Targets
+The fabric connection uses the template buses. `uio_oe` is explicitly zero;
+this design does not enable a bidirectional output path. The third analog
+port remains in the template but carries no clock.
 
-The default Make target is `help`, so running `make` prints usage and all available targets with short descriptions.
+For example, set `ui_in=8'h42` and `uio_in=8'h0c` while reset is asserted
+for multiplier 2, clock-0 divisor 2 and clock-1 divisor 3. With a 100 MHz
+reference, the targets are 100 MHz and 66.667 MHz, provided the oscillator
+can reach 200 MHz at the operating corner.
+
+### Startup and reconfiguration
+
+1. Assert `rst_n=0` or hold `ena=0` and set all configuration bits.
+2. Run the reference clock, release reset and assert enable.
+3. Both divider counters start after a common sequence of eight falling
+   oscillator edges. Allow the FLL to settle and synchronize `uo_out[2]` before
+   using it in another clock domain.
+4. Change configuration only while reset or disable is asserted, then restart.
+
+Reset/disable can truncate an output pulse. Reference loss clears lock after
+4096 oscillator cycles; it does not immediately stop the oscillator. Multiplier
+or reference requests beyond the tuning range cannot produce the requested
+frequency. Lock has a finite tolerance, so leave margin from the tuning endpoints.
+
+## Circuit and physical implementation
+
+[cell_map.v](rtl/cell_map.v) contains all explicit PDK cell instances. The rest
+of the RTL uses its wrappers, retaining the chosen drive strengths and reset
+polarities. Synchronizer attributes are attached to the underlying flip-flops.
+The structure check rejects raw PDK cell instances outside this mapping file.
+
+[ring_oscillator.v](rtl/ring_oscillator.v) contains thirteen explicit inverting
+delay stages with four gate paths per stage. The 40 ordered trim settings change
+one control wire at a time. Two local flip-flop ranks apply each trim bit on the
+stage's delayed falling edge. Only one ring node reaches the isolated output
+buffer. Intermediate internal nodes are part of the loop, not external taps.
+
+[graded_fll_controller.v](rtl/graded_fll_controller.v) measures held ring-edge
+counts over 128 reference cycles using request/return synchronizers. It applies
+fractional tuning between adjacent trim levels. This controls average frequency;
+individual periods can vary during tuning. Lock has finite count resolution and
+does not certify jitter or phase accuracy.
+
+[output_divider.v](rtl/output_divider.v) has explicit clock-buffer branches for
+its sampling, configuration and counting registers. The two instances share
+one startup epoch through separate reset-buffer branches. Each branch drives
+seven counter flip-flops and one output gate. Matched inverter pairs retain one rising and one falling
+inverter delay on each output edge.
+
+The **200 × 200 µm** die and all **46 template pin shapes** are fixed. The
+[DEF template](flow/librelane/heichips26_template_tiny_analog.def) is preserved
+byte-for-byte. The oscillator occupies the **(105, 20)–(195, 90) µm** placement
+region. This is a cell-placement fence, with no nested macro or routing
+obstruction. The complete design uses routing through Metal4 and the normal
+Metal3/Metal4 power grid.
+
+![Flat standard-cell placement, with the oscillator highlighted](img/placement.png)
+
+The flow preserves **328 explicit clock/reset cells and their connections**.
+Only the isolated reference and ring clocks feeding the controller receive
+automatic clock trees. The SDC applies a **100 MHz reference / 400 MHz ring**
+digital timing envelope, with **150 ps setup and 50 ps hold uncertainty**.
+STA and SDF use **6 fF at each output port**. Chip-level pad and board loading
+are outside this block-level timing check.
+The physical feedback loop is cut for STA only. The transistor/SDF circuits keep
+it closed. CDC exceptions end at first-stage sampling pins; the held count bus
+has an explicit delay bound. The common divider
+reset release is timed from its falling-edge source register to the counters.
+Reset and enable remain electrically active in the SDC, so the backend repairs
+their fanout and loading. A separate three-corner STA audit removes reset case
+constraints and checks fanout, capacitance and slew. Reset/startup behavior and
+static configuration assumptions are also checked in simulation.
+
+## Verification report
+
+The physical run `CELLMAP_20261104_1038` fits the fixed footprint, with
+**30,415 µm²** of standard-cell area and about **83% utilization**.
+
+All physical and simulation results below use this run.
+
+| Check | Result |
+| --- | --- |
+| Routing/Magic/KLayout DRC, LVS and antenna checks | Zero reported violations |
+| Fanout, transition and capacitance | Zero violations at all three corners, including an independent reset-switching audit |
+| Minimum setup / hold slack | +0.228 ns / +0.073 ns |
+| Fixed template geometry, oscillator region and power-pin connectivity | Pass |
+| Explicit clock/reset cells | 328 preserved without resizing or rewiring |
+| Cell restrictions | No tri-state or dedicated delay-gate cells in the reference or routed netlist |
+| RTL divider pairs | All 1,024 pairs at both 100 and 400 MHz pass |
+| RTL FLL/output behavior | All seven frequency/phase cases and reset, enable and reference-loss recovery checks pass with the measured frequency table |
+| Routed SDF at TT | All seven frequency/phase cases, reset/enable, reference-loss recovery and waveform checks pass |
+| Static transistor characterization | All 40 TT trim settings and both PVT endpoints pass; six cell-only endpoints and all six routed endpoints at half the time step also pass |
+| Live trim at TT | All 12 directed cases pass at 10 ns and 100 ns update intervals |
+| Verification coverage and source freshness | Pass |
+| Submission precheck | All 13 stages pass |
+
+The functional oscillator table uses all 40 measured nominal trim settings.
+The calibrated RTL regression passes. This frequency model does not establish
+transistor-level behavior of the complete FLL.
+
+### Oscillator SPICE results
+
+The routed nominal sweep passes all **40 ordered trim settings**, with a
+monotonic range of **53.20–253.57 MHz**. The endpoint sweeps also pass at the
+slow and fast process/voltage/temperature corners. The 200 MHz nominal target
+is reached with the extracted signal parasitics included.
+
+| Corner | Conditions | Cell-only endpoints | Routed endpoints |
+| --- | --- | --- | --- |
+| TT | 1.20 V, 25°C | 86.96–465.45 MHz | 53.20–253.57 MHz |
+| SS | 1.08 V, 125°C | 55.21–296.59 MHz | 33.40–159.00 MHz |
+| FF | 1.32 V, −40°C | 129.09–695.37 MHz | 80.69–386.94 MHz |
+
+The cell-only fixture omits routing capacitance and resistance. Use the routed
+range for this layout. The nominal duty cycle spans **48.90–50.23%** across
+the 40 settings. The SS/FF checks cover the two endpoints; they are not full
+40-code sweeps. A target above 200 MHz is supported at nominal conditions,
+not across all three corners.
+
+Halving the transient time step at all six PVT endpoints changes frequency
+by at most **0.463%**, duty cycle by **0.010 percentage points** and minimum
+pulse width by **0.450%**. All comparisons pass the configured numerical limits.
+
+![Routed oscillator frequency across trim codes and PVT endpoints](img/routed_frequency.png)
+
+All checked corners start after the external reset is released, with no forced
+internal initial condition. The startup plot shows a brief supply-ramp transient, a low output while
+reset is held after the supply settles, and oscillation after reset release.
+
+![Routed transistor waveform during reset and startup](img/routed_startup.png)
+
+All **12 directed live-trim tests at TT pass**. They switch six adjacent code
+pairs at 10 ns and 100 ns intervals and check pulse widths and periods against
+the corresponding static settings. The plot below shows requests between codes
+0 and 1 every 10 ns. In this case, periods remain between **3.939 and 4.197 ns**,
+with a minimum pulse width of **1.965 ns**.
+
+![Routed transistor waveform while changing adjacent trim settings](img/trim_transition.png)
+
+### RTL and routed gate-level results
+
+![Functional RTL outputs using the measured nominal frequency table](img/rtl_waveform.png)
+
+The routed SDF measurements below use the full standard-cell netlist and routed
+parasitics at **TT, 1.20 V, 25°C**. Frequencies are in MHz; “bypass” is divisor code 0 and “stop” is code 1.
+
+| Reference | Multiplier | Divisors 0 / 1 | Target outputs | Measured outputs |
+| --- | --- | --- | --- | --- |
+| 100 | 1 | bypass / 3 | 100 / 33.333 | 98.55 / 32.85 |
+| 100 | 2 | 2 / 3 | 100 / 66.667 | 99.27 / 66.18 |
+| 20 | 11 | 3 / 5 | 73.333 / 44 | 73.12 / 43.88 |
+| 10 | 24 | 5 / 5 | 48 / 48 | 47.86 / 47.86 |
+| 5 | 31 | 31 / 7 | 5 / 22.143 | 4.98 / 22.08 |
+| 10 | 20 | stop / 2 | 0 / 100 | 0 / 99.75 |
+| 20 | 10 | 2 / 2 | 100 / 100 | 99.65 / 99.65 |
+
+![Settled clock outputs from the routed gate-level simulation](img/gl_waveform.png)
+
+### Measurement scopes
+
+- RTL and all-cell SDF: wait for lock, wait **10 µs**, then measure for **100 µs**.
+  Acquisition is limited to **20 ms** per case, and the global simulation watchdog
+  is **150 ms**. Frequency tolerance is 2%; periodic common rising edges are
+  checked within 0.5 ns for two divided outputs, or 1 ns when one output bypasses
+  its divider. Bypass omits the flip-flop delay. The observed SDF skew was 0.598 ns
+  for bypass versus ÷3, and at most 0.074 ns for two divided outputs. Runt pulses
+  and disagreement between fabric and analog outputs also fail the test. Every
+  output rising edge is checked against the common oscillator-cycle epoch; skipped
+  or duplicated source cycles fail immediately. The extracted controller timing
+  check is separate from Icarus, which does not implement every library timing check.
+- SPICE: the actual cell transistors use OpenVAF/OSDI models, a **1 ns supply ramp**,
+  reset release at **10–10.05 ns**, **80 ns warmup** and a **90–290 ns** measurement
+  window. No internal node is initialized to force startup. The output load is
+  **20 fF**. Static checks cover startup, amplitude, duty, settling and monotonic trim.
+- Routed SPICE retains oscillator cells and signal RC from the full layout.
+  All three transistor corners use the same nominal extracted signal RC.
+  Its supply rails are ideal; surrounding digital logic and crosstalk are omitted.
+  `rshunt=1e12` supplies a global numerical DC path. This fixture is not a complete
+  closed-loop transistor simulation of the FLL and dividers.
+- Live trim at TT tests the adjacent pairs **0↔1, 12↔13, 13↔14, 25↔26, 26↔27
+  and 38↔39**, with 50 ps control edges and 10/100 ns update intervals.
+  These traces use second-order Gear integration and a maximum 10 ps step. Pulse/period limits are checked against the corresponding static
+  settings. Not every possible asynchronous request instant or mismatch condition
+  is covered.
+
+## Build and reproduce
+
+From the repository root:
 
 ```sh
-make
-make help
-```
-
-
-### Open the Design Files
-
-Opens a file browser for this folder with `sak-open.py`, vendored from the [IIC-OSIC-TOOLS](https://github.com/iic-jku/IIC-OSIC-TOOLS) in `scripts/` (see `scripts/.sak-scripts-version`), one button per design file, grouped by directory:
-
-```sh
-make open
-```
-
-Clicking a button launches the matching tool in the file's own directory, so Xschem finds its `simulations/` folder and KLayout its run outputs where they belong:
-
-| File type | Tool | In the Nix shell |
-| --- | --- | --- |
-| `.sch`, `.sym` | Xschem | yes |
-| `.gds`, `.gds.gz`, `.oas`, `.oas.gz` | KLayout in edit mode | yes |
-| `.mag` | Magic | yes |
-| `.vcd`, `.fst`, `.gtkw` | GTKWave | yes |
-| `.raw` | gaw (ngspice rawfile) | no |
-| `.png`, `.pdf` | the desktop's handler (`xdg-open`) | no |
-| `.sv`, `.svh`, `.v`, `.vh`, `.vhd`, `.vhdl`, `.spice`, `.cir`, `.sp`, `.cdl`, `.sdc`, `.lef`, `.lib`, `.tcl`, `.mk`, `.yaml`, `.json`, `.py`, `.qmd`, `.tex`, `.md` and `Makefile` | gvim | no |
-
-Only these types get a button. Files with any other extension (`.sh`, `.svg`, `.pcf`, `.save`, `.rpt`, `.txt`, `.csv` and so on) are not listed.
-
-`gvim`, `gaw` and `xdg-open` are not part of this template's Nix shell, so their buttons report `cannot run …` in the status line instead of opening. Point them at a tool you do have with the per-type environment overrides — the variable name is `SAK_OPEN_` plus the extension in upper case (`SAK_OPEN_GDS_GZ` for `.gds.gz`, `SAK_OPEN_MAKEFILE` for `Makefile`):
-
-```sh
-SAK_OPEN_SV='code -w' SAK_OPEN_V='code -w' SAK_OPEN_MD='code -w' make open
-```
-
-`SAK_OPEN_TERMINAL` sets the terminal that the right-click "Open shell" entry starts; the Nix shell's `xterm` works there.
-
-Schematics and symbols that belong to one design unit share a single tabbed Xschem instance instead of one process per click. The unit is the nearest ancestor holding a `Makefile`, so this macro and its `counter` sub-macro each get their own instance, and every tab writes its netlists to the folder that macro's `xschemrc` pins.
-
-The tree is rescanned every 15 s, so files a running flow produces appear on their own and are highlighted for a minute. Generated directories are skipped by default: `runs/`, `sim_build/`, `obj_dir/`, `simulations/`, `__pycache__/`, `_freeze/` and `.git/`. The Xschem `simulations/` folder is one of them, so the `.raw` files show up only with `--all`. Pass extra options with `OPEN_ARGS`:
-
-```sh
-make open OPEN_ARGS=--all              # include the build outputs
-make open OPEN_ARGS="--prune backups"  # skip one more directory name
-make open OPEN_ARGS=--list             # print the file list and exit, no display needed
-```
-
-At most 400 buttons are drawn at once, because each one is an X window. `--all` on a hardened macro goes well past that — the LibreLane `runs/` trees alone hold hundreds of files — and what was left out is stated at the end of the list and in the status line. Narrow the filter, untick a few types, or raise the cap with `--max` (`0` for no limit).
-
-> [!NOTE]
-> This target needs a graphical display. On the HeiChips VM it works out of the box; over SSH use X11 forwarding (`ssh -X`). Without a display it stops with `cannot open a window`.
-
-
-### Linting
-
-To lint the Verilog/SystemVerilog source files with [Verilator](https://www.veripool.org/verilator/), run:
-
-```sh
-make lint-verilog                # lint the full heichips26_digital_project design (top + counter RTL)
-make lint-verilog CELL=heichips26_digital_project   # equivalent: CELL defaults to heichips26_digital_project
-make lint-verilog-all            # lint the counter sub-macro, then heichips26_digital_project
-```
-
-When `CELL=heichips26_digital_project` (the default), all synthesis sources (top level and the counter RTL) are passed to Verilator.
-For another cell, the RTL source is auto-selected as `rtl/<CELL>.sv` when present, otherwise `rtl/<CELL>.v`.
-
-The `lint-verilog-all` target runs these lint checks in sequence:
-
-1. `make -C macros/counter lint-verilog-all`
-2. `make lint-verilog` (default: `heichips26_digital_project`)
-
-This is also the lint step used by `make all`.
-
-
-### Verification and Simulation
-
-We use [cocotb](https://www.cocotb.org/), a Python-based testbench environment, and [Icarus Verilog](https://github.com/steveicarus/iverilog) for the verification of the macro.
-
-The simulation targets are unified and accept an optional `CELL` variable (default: `heichips26_digital_project`).
-The waveform viewer can be changed with `WAVEFORM_VIEWER=<gtkwave|surfer>` (default: `gtkwave`).
-
-> [!NOTE]
-> [Surfer](https://surfer-project.org/) is currently **not** available in the nix shell — use the default GTKWave there. Surfer is provided by the IIC-OSIC-TOOLS container.
-
-> [!NOTE]
-> In the current repository state, the provided Verilog and cocotb testbench/viewer files are for `heichips26_digital_project`.
-> Running simulation/view targets with another `CELL` requires corresponding testbench files (for example, `testbenches/verilog/<CELL>_tb.*` and `testbenches/cocotb/<CELL>_tb.py`).
-
-#### RTL Verilog Simulation
-
-Compiles the RTL (top level + counter) with Icarus Verilog and runs the simulation.
-When `CELL=heichips26_digital_project` (the default), the full `MODULES_SIM` source list and the `.sv` testbench are selected automatically.
-For other cells, the RTL source is auto-selected as `rtl/<CELL>.sv` when present, otherwise `rtl/<CELL>.v`, and the testbench likewise as `testbenches/verilog/<CELL>_tb.sv` when present, otherwise `testbenches/verilog/<CELL>_tb.v`.
-The waveform is written to `testbenches/verilog/` (e.g. `testbenches/verilog/heichips26_digital_project_tb.fst`):
-
-```sh
-make sim-rtl-verilog              # run heichips26_digital_project RTL simulation
-```
-
-To view the waveform afterwards:
-
-```sh
-make sim-view-verilog                                  # view heichips26_digital_project waveform
-make sim-view-verilog WAVEFORM_VIEWER=surfer           # use Surfer instead
-```
-
-The simulation folder contains a pre-configured waveform layout file (`heichips26_digital_project_tb.gtkw` for GTKWave, `heichips26_digital_project_tb.surf.ron` for Surfer).
-The view target loads it automatically together with the current `.fst`, so signal formatting is preserved across runs.
-
-#### RTL / GL cocotb Simulation
-
-The cocotb testbench is located in `testbenches/cocotb/heichips26_digital_project_tb.py` and exercises the embedded counter through the chip interface (`ui_in[0]` is the counter enable, `uo_out` is the counter value):
-
-- reset clears the counter to 0
-- the counter holds its value while `ui_in[0]` is low
-- the counter increments by 1 on every rising clock edge while `ui_in[0]` is high
-- the counter wraps from `CTR_MAX` back to 0
-
-```sh
-make sim-rtl-cocotb               # run heichips26_digital_project RTL cocotb simulation
-```
-
-To run the gate-level (GL) cocotb simulation (sources the post-synthesis netlists from `final/nl/` and `macros/counter/final/nl/`):
-
-```sh
-make sim-gl-cocotb                # gate-level simulation of heichips26_digital_project
-```
-
-> [!NOTE]
-> Gate-level simulation requires the latest implementation in `flow/final/` (and a `final/nl/heichips26_digital_project.nl.v` copy via `make copy-final`).
-
-A waveform file is generated under `testbenches/cocotb/sim_build/heichips26_digital_project.fst`.
-To view it:
-
-```sh
-make sim-view-cocotb                                  # view heichips26_digital_project waveform
-make sim-view-cocotb WAVEFORM_VIEWER=surfer           # use Surfer instead
-```
-
-The cocotb folder contains a pre-configured waveform layout file (`heichips26_digital_project_tb.gtkw` for GTKWave, `heichips26_digital_project_tb.surf.ron` for Surfer).
-The view target loads it automatically together with the current `.fst`, so signal formatting is preserved across runs.
-
-#### Run All Simulations
-
-To run all simulation targets in sequence:
-
-```sh
-make sim-all
-```
-
-This executes the following targets in order:
-
-1. `sim-rtl-verilog` (default: `heichips26_digital_project`)
-2. `sim-rtl-cocotb` (default: `heichips26_digital_project`)
-3. `sim-gl-cocotb` (default: `heichips26_digital_project`)
-
-> [!NOTE]
-> The `sim-view-verilog` and `sim-view-cocotb` targets are **not** called by `sim-all`: both open a waveform viewer GUI (GTKWave or Surfer), which blocks the shell until the window is closed. They are designed for interactive use.
-
-> [!TIP]
-> This top level is verified with Icarus Verilog and cocotb only. The mixed-signal gate-level flow in Xschem (XSPICE model + ngspice) lives in the [`counter`](macros/counter/README.md#gate-level-xschem-simulation) sub-macro, which is the reference for analog mixed-signal simulation in this template.
-
-
-### LibreLane Flow
-
-Run the LibreLane flow with:
-
-```sh
-make librelane
-```
-
-Additional targets are available for different DRC configurations:
-
-- `make librelane-nodrc` – run LibreLane without DRC checks
-- `make librelane-magicdrc` – run LibreLane with only Magic DRC checks
-- `make librelane-klayoutdrc` – run LibreLane with only KLayout DRC checks
-
-After the LibreLane flow completes successfully, the generated views are saved under `flow/final/`. `flow/final/` is included in `.gitignore`.
-
-The floorplan is fixed by a HeiChips DEF template (`FP_DEF_TEMPLATE` in `flow/librelane/config.yaml`). Select the slot size by switching between the tiny/small/large template blocks in the config — see the top-level repository README for the available slot sizes.
-
-
-### View the Design
-
-After completion, you can view the design using the OpenROAD GUI:
-
-```sh
+source /path/to/oss-cad-suite/environment
+source ./env.sh
+make clone-pdk
+make build-top BUILD_TAG=my_run
 make librelane-openroad
 ```
 
-Or using KLayout:
+`PDK_ROOT` may point to an existing SG13CMOS5L installation. There are no sibling
+project dependencies. The backend wrapper also supports the OSS CAD Suite
+LibreLane launcher and sanitizes incompatible Python/Verilator environment
+variables before entering that runtime.
+
+The reported run uses LibreLane **3.1.0.dev4** through the OSS CAD Suite
+launcher, OpenSTA **2.7.0**, ngspice **42**, and IHP-Open-PDK commit
+`1ffc783ff62e739856ee1b25e835338388c66c9e` (the revision pinned by the root
+Makefile). The repository's Nix environment was not exercised for these results.
+
+Run checks from this design directory. Select a Python with NumPy and an
+OSDI-enabled ngspice once, so every simulation target inherits the same tools:
 
 ```sh
-make librelane-klayout
+export SIM_PYTHON=/path/to/python-with-numpy
+export NGSPICE=/path/to/ngspice
+make test-measurements RUN_TAG=my_run
+make sim-gl-verilog RUN_TAG=my_run
+make sim-spice-ring sim-spice-routed RUN_TAG=my_run JOBS=4
+make sim-spice-fine RUN_TAG=my_run
+make sim-spice-transitions RUN_TAG=my_run JOBS=4
+make update-frequency-model RUN_TAG=my_run
+make sim-divider-verilog RUN_TAG=my_run
+make sim-rtl-verilog RUN_TAG=my_run
+make check-structure check-physical check-qualification publish-manifest RUN_TAG=my_run
 ```
 
-
-### Copy Important Reports
-
-To copy the yosys synthesis checks, antenna reports, post-PnR timing summary, per-corner power reports, IR-drop report, Magic/KLayout DRC results, LVS report, and manufacturability report from the latest run into `verification/`, run:
+The schematic target checks the six PVT endpoints with a maximum 10 ps step.
+The routed target checks all 40 TT levels and both endpoints at SS/FF with a
+maximum 20 ps step at TT/SS and 10 ps at FF. The routed sweep supplies the
+functional frequency model.
+The fine-step target repeats all six routed PVT endpoints at half each corner's
+normal step (10 ps TT/SS, 5 ps FF)
+and compares frequency, duty cycle and minimum pulse width. The numerical
+limits are 1% frequency difference, 0.2 percentage points of duty cycle and
+1% minimum-pulse difference. These checks bound simulation-step sensitivity;
+they do not establish silicon accuracy or account for device mismatch.
+Use `SPICE_ARGS='--full-pvt'` for all 120 schematic or routed combinations.
+`SPICE_ARGS='--no-extract'` reuses the selected run's existing extracted fixture.
+The optional quarter-step diagnostic can target one endpoint:
 
 ```sh
-make copy-reports
+make sim-spice-finer RUN_TAG=my_run SPICE_ARGS='--trim 39 --corners tt --case-timeout-s 7200'
 ```
 
-This only works if at least one LibreLane run exists in `flow/librelane/runs/` and the latest run completed without errors.
+It writes a separate `routed_finer/` directory and does not replace the normal
+or fine sweep. The extra 10-to-5 ps TT comparison uses a 0.2% frequency limit.
 
+All testbench sources and sweep settings are under `testbenches/`; Python helpers
+compile/generate them and analyze the saved results.
 
-### Copy the Final Folders
-
-To copy the latest GDS, LEF, LIB, NL, PNL, SPEF, VH, and render from `flow/final/` into `final/`, run:
+For digital simulation, override global times in nanoseconds:
 
 ```sh
-make copy-final
+make sim-gl-verilog RUN_TAG=my_run   VERILOG_ARGS='--warmup-ns 10000 --measure-ns 100000 --acquire-timeout-ns 20000000 --watchdog-ns 150000000'
 ```
 
-This assumes the final folders exist under `flow/final/` after a successful LibreLane run. The `final/` views of this top-level macro are the ones referenced by `submission.yaml` for the HeiChips precheck.
+`make verify BUILD_TAG=my_run` builds and runs the verification suites. For an
+existing build, run `make sim-all RUN_TAG=my_run`, then
+`make check-qualification publish-manifest RUN_TAG=my_run`.
+`build-top` performs physical checks and publishes views without automatically
+running long simulations. `RUN_TAG` selects existing results; it defaults to the
+latest successful physical build. `BUILD_TAG` creates a new physical run.
+GUI targets open that latest successful physical run.
 
-The layout render in `final/render/` is produced by LibreLane itself and is simply copied along with the other views, so there is no separate render target.
+### Waveforms, figures and generated files
 
-
-### Copy the Final Netlist
-
-To copy the latest SPICE, PnL, and Netlist files from `flow/final/` into `netlist/`, run:
+ngspice saves `test.sp`, `ngspice.log`, `waveform.dat` and `measurements.json`
+for each case. `waveform.dat` contains time in seconds and output voltage.
+SDF generation logs, physical SDF, Icarus-compatible copies and simulation logs
+are under `build/<tag>/simulation/verilog/gl/`.
 
 ```sh
-make copy-netlist
+make capture-waveforms RUN_TAG=my_run
+make report-images RUN_TAG=my_run REPORT_PYTHON=/path/to/python-with-matplotlib
+# Review build/my_run/documentation/img/, then publish the curated figures:
+make publish-report RUN_TAG=my_run REPORT_PYTHON=/path/to/python-with-matplotlib
 ```
 
-This only works if the required final views exist in `flow/final/spice/`, `flow/final/pnl/`, and `flow/final/nl/`.
+The generator writes diagrams and plots to the ignored run directory. Publication
+copies the reviewed files to `img/` beside this README and records input/output
+hashes. It does not change RTL or layout files.
 
-
-### Build FPGA
-
-There are two default FPGA emulation flows, sharing the same recipe logic from `fpga/fpga.mk`:
-
-- **Top-level (whole chip)** — `fpga/`, targets a [ULX3S](https://radiona.org/ulx3s/) board (ECP5, Yosys → nextpnr-ecp5 → ecppack), flashed with `openFPGALoader`.
-- **Macro-level (`counter` standalone)** — `macros/counter/fpga/`, also targets a ULX3S by default, wired directly to `counter`'s native ports (no chip-level wrapper).
-
-Both flows can also target other boards, each with its own thin Makefile reusing `fpga/fpga.mk` — see `fpga/README.md` for the full board matrix (iCEBreaker, Tang Nano 9K, pico-ice, and, via the separate `nix-openxc7` Xilinx toolchain vendored at the repo root, Basys 3/Boolean).
-
-To run the full top-level flow (synthesis → place-and-route → bitstream), run:
+To inspect waveforms interactively:
 
 ```sh
-make build-fpga
+gtkwave build/my_run/simulation/verilog/gl_wave/waveform.vcd
+env -u PYTHONHOME -u PYTHONPATH -u PYTHONEXECUTABLE -u __PYVENV_LAUNCHER__ \
+  /path/to/python-with-matplotlib scripts/view_waveform.py \
+  build/my_run/simulation/ngspice/routed/tt_trim00/waveform.dat --start-ns 0 --stop-ns 50
 ```
 
-This invokes `make -C fpga all`. Individual steps can also be run from `fpga/` (or `macros/counter/fpga/` for the macro-level flow, or e.g. `fpga/design/icebreaker/` for another board):
+The Python viewer requires NumPy and Matplotlib. Use `--save build/my_run/trace.png`
+when running without a graphical display.
 
-```sh
-make -C fpga synthesis
-make -C fpga pr              # nextpnr place-and-route
-make -C fpga gen_bitstream   # ecppack → .bit
-make -C fpga load_bitstream  # load into SRAM via openFPGALoader
-make -C fpga flash_bitstream # optional: write to flash instead, to survive a power cycle
-```
+| Directory | Ownership |
+| --- | --- |
+| `rtl/` | Complete physical RTL; no nested macro sources |
+| `flow/librelane/` | YAML, SDC and the fixed tiny analog DEF |
+| `scripts/` | Build, simulation, extraction and checking helpers |
+| `testbenches/verilog/` | Digital testbench and functional frequency fixture |
+| `testbenches/ngspice/` | Sweep values and OpenVAF model startup template |
+| `build/<tag>/` | Ignored runs, reports, extracted netlists and waveforms |
+| `img/` | Curated documentation figures |
+| `final/` | Versioned GDS, LEF, netlists, Liberty, SPEF and manifest |
 
-The counter macro can be built and flashed the same way from `macros/counter/`:
-
-```sh
-make -C macros/counter build-fpga
-```
-
-> [!NOTE]
-> Loading and flashing differ per board/toolchain — each Makefile sets `LOAD_CMD`/`FLASH_CMD` accordingly. The default ULX3S flow and most other boards use `openFPGALoader`; pico-ice uses `dfu-util` instead, since its RP2040 co-processor acts as a USB DFU bootloader that `openFPGALoader`/`iceprog` don't speak to directly.
-
-See `fpga/README.md` for the full shared-flow reference (variables, targets, adding a new board or macro).
-
-
-### Build Macros
-
-To lint, build, verify and simulate the sub-macros, run:
-
-```sh
-make build-counter               # run the counter sub-macro's full flow (make -C macros/counter all)
-make build-macros                # run the full flow of all sub-macros (currently: counter)
-```
-
-`build-macros` is the target to extend when you add further sub-macros: give each one its own `build-<macro>` target and call it from `build-macros`, mirroring `clean-macros`.
-
-
-### Build Top
-
-To build the macro with LibreLane, copy its reports, copy final folders, and copy netlists, run:
-
-```sh
-make build-top
-```
-
-> [!NOTE]
-> If you modified the counter sub-macro, run `make build-counter` first so the `MACROS` views referenced by the top-level config are up to date. `make all` takes care of this ordering for you.
-
-
-### Design Rule Check (DRC) & Layout Versus Schematic (LVS)
-
-The LibreLane flow already includes DRC and LVS checks with Magic and KLayout, and they are saved in the `verification/` folder.
-
-
-### Lint, Build, Verify and Simulate All
-
-Lints, builds, verifies and simulates the sub-macros and the whole top level:
-
-- `lint-verilog-all`
-- `build-macros`
-- `build-fpga`
-- `build-top`
-- `sim-all`
-
-Linting runs first to fail fast on structural RTL issues. `build-macros` then hardens the sub-macros, so `build-top` instantiates the `final/` views produced by this run — the build order from [Sub-Macros](#sub-macros) is handled automatically. The simulations run **after** the build, so the gate-level simulation (`sim-gl-cocotb`) runs on the netlists produced by this build, not on those of a previous one. The DRC and LVS verification is done within the LibreLane flow.
-
-```sh
-make all
-```
-
-
-### Clean
-
-`make clean` deletes all generated files and folders of the top level. The sources (RTL, testbenches, and the LibreLane configuration) stay untouched. Deleted are:
-
-- `flow/librelane/runs/` and `flow/final/` (LibreLane runs and output views)
-- `final/` (GDS, LEF, LIB, netlist, SPEF, Verilog header, and render deliverables)
-- `netlist/` (the extracted netlists)
-- `verification/` (the copied LibreLane reports)
-- `testbenches/cocotb/sim_build/` and the Verilog testbench waveforms (`*.fst`)
-- the FPGA build outputs (via `make -C fpga clean`)
-
-`make clean-counter` runs `make clean` in the counter macro, `clean-macros` cleans all sub-macros, and `clean-all` combines both (`clean-macros` + `clean`), mirroring the analog project's targets.
-
-Every Makefile target recreates its output folders, so a clean rebuild is simply:
-
-```sh
-make clean-all
-make all
-```
-
-`make all` starts with `build-macros`, so the counter's `final/` views deleted by `clean-all` are rebuilt before the top level needs them.
+`make clean` removes only the design's ignored `build/` tree. `clean-sim` removes
+only the selected run's simulations. Neither removes source or published views.

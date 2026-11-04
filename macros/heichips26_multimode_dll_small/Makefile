@@ -1,284 +1,117 @@
-# SPDX-FileCopyrightText: 2026 The HeiChips Contributors
-# SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
-
-MAKEFILE_DIR := $(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
-
-RUN_TAG = $(shell ls -1 $(LIBRELANE_DIR)/runs 2>/dev/null | tail -n 1)
-
-# Variables
-TOP = heichips26_digital_project
-
+SHELL := /bin/bash
+ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
+PROJECT_ROOT := $(abspath $(ROOT)/../..)
+TOP := heichips26_multimode_dll_small
+PDK_ROOT ?= $(PROJECT_ROOT)/IHP-Open-PDK
+PDK ?= ihp-sg13cmos5l
+PYTHON ?= python3
+SIM_PYTHON ?= $(PYTHON)
+REPORT_PYTHON ?= $(SIM_PYTHON)
+SIM_RUNTIME := env -u PYTHONHOME -u PYTHONPATH -u PYTHONEXECUTABLE -u __PYVENV_LAUNCHER__
+NGSPICE ?= ngspice
+APPIMAGE_EXTRACT_AND_RUN ?= 1
+JOBS ?= 4
+ifndef BUILD_TAG
+BUILD_TAG := RUN_$(shell date -u +%Y%m%d_%H%M%S)
+endif
+RUN_TAG ?= $(shell cat build/last_successful_run 2>/dev/null || echo local)
+RUN_DIR = build/$(RUN_TAG)
+BACKEND = $(PYTHON) scripts/run_backend.py
+FLOW_ARGS ?=
+VERILOG_ARGS ?=
+SPICE_ARGS ?=
+export PDK_ROOT PDK RUN_TAG NGSPICE APPIMAGE_EXTRACT_AND_RUN
 .DEFAULT_GOAL := help
 
-# Cell name for verification targets (default: top-level cell)
-# Override with: make <target> CELL=<cellname>
-CELL ?= $(TOP)
+help: ## List project commands
+	@awk 'BEGIN {FS=":.*## "} /^[a-zA-Z0-9_-]+:.*## / {printf "  %-26s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
-# Set the waveform viewer GTKWave or Surfer (default: gtkwave)
-# Override with: make <target> WAVEFORM_VIEWER=<gtkwave|surfer>
-WAVEFORM_VIEWER ?= gtkwave
+librelane: ## Place and route the complete flat design in the fixed tiny template
+	$(PYTHON) scripts/manage_outputs.py snapshot --run-tag $(BUILD_TAG)
+	$(BACKEND) flow/librelane/config.yaml --pdk $(PDK) --pdk-root "$(PDK_ROOT)" --manual-pdk --run-tag $(BUILD_TAG) --save-views-to build/$(BUILD_TAG)/views $(FLOW_ARGS)
+	$(MAKE) check-physical RUN_TAG=$(BUILD_TAG)
+	$(MAKE) check-structure RUN_TAG=$(BUILD_TAG)
+	$(PYTHON) scripts/manage_outputs.py success --run-tag $(BUILD_TAG)
 
-# Extra options for the sak-open.py file browser (e.g. --all to include build outputs)
-# Override with: make open OPEN_ARGS=<options>
-OPEN_ARGS ?=
+build-top: librelane ## Build, verify physical views and publish final files
+	$(PYTHON) scripts/manage_outputs.py publish --run-tag $(BUILD_TAG)
 
-# Folder structure
-MACROS_DIR      := macros
-SCRIPTS_DIR     := scripts
-COCOTB_DIR      := testbenches/cocotb
-VERILOG_TB_DIR 	:= testbenches/verilog
-REPORT_DIR     	:= verification
-SRC_DIR 		:= rtl
-NET_NL_DIR    	:= netlist/nl
-NET_PNL_DIR  	:= netlist/pnl
-NET_SPICE_DIR 	:= netlist/spice
-LIBRELANE_DIR 	:= flow/librelane
-FLOW_FINAL_DIR 	:= flow/final
-FINAL_DIR      	:= final
+check-physical: ## Check DRC/LVS/timing/electrical metrics, template pins, region and supplies
+	$(PYTHON) scripts/check_physical_metrics.py $(RUN_DIR)/views/metrics.json --output $(RUN_DIR)/verification/physical_summary.json
+	$(BACKEND) --tool openroad -exit -python scripts/check_layout.py --odb $(RUN_DIR)/views/odb/$(TOP).odb --template flow/librelane/heichips26_template_tiny_analog.def --output $(RUN_DIR)/verification/layout.json
+	$(PYTHON) scripts/check_reset_electrical.py
 
-# Variables for simulation and linting targets
-# The counter sub-macro is hardened separately (see macros/counter/), but its RTL
-# is needed for linting and RTL simulation of the whole design.
-MODULES_SYNTH := \
-	$(SRC_DIR)/heichips26_digital_project.sv \
-	$(MACROS_DIR)/counter/rtl/counter.sv
+check-structure: ## Verify explicit waveform cell types and wiring after routing
+	$(PYTHON) scripts/run_structure_check.py
 
-MODULES_SIM := \
-	$(MODULES_SYNTH)
+publish-manifest: check-structure ## Publish checked views and hashes of completed verification
+	$(PYTHON) scripts/manage_outputs.py publish
+copy-final copy-netlist: publish-manifest
 
-# Source files for sim-rtl-verilog: auto-selects MODULES_SIM when CELL == TOP, single-file otherwise (prefers .sv, falls back to .v)
-_SIM_SRCS = $(if $(filter $(CELL),$(TOP)),$(MODULES_SIM),$(or $(wildcard $(SRC_DIR)/$(CELL).sv),$(SRC_DIR)/$(CELL).v))
+librelane-openroad: ## Open the latest successful run in OpenROAD
+	$(BACKEND) flow/librelane/config.yaml --pdk $(PDK) --pdk-root "$(PDK_ROOT)" --manual-pdk --last-run --flow OpenInOpenROAD
+librelane-klayout: ## Open the latest successful run in KLayout
+	$(BACKEND) flow/librelane/config.yaml --pdk $(PDK) --pdk-root "$(PDK_ROOT)" --manual-pdk --last-run --flow OpenInKLayout
 
-# Source files for lint-verilog: all synthesis sources for TOP, single-file otherwise (prefers .sv, falls back to .v)
-_LINT_SRCS = $(if $(filter $(CELL),$(TOP)),$(MODULES_SYNTH),$(or $(wildcard $(SRC_DIR)/$(CELL).sv),$(SRC_DIR)/$(CELL).v))
+lint-verilog: ## Compile and elaborate the functional top-level sources
+	$(PYTHON) scripts/run_verilog.py --mode lint $(VERILOG_ARGS)
+sim-rtl-verilog: ## Test FLL behavior, division, reset and relative output phase
+	$(PYTHON) scripts/run_verilog.py --mode rtl $(VERILOG_ARGS)
+sim-gl-verilog: ## Simulate the routed gates with physical SDF
+	$(PYTHON) scripts/run_verilog.py --mode gl $(VERILOG_ARGS)
+sim-divider-verilog: ## Sweep both dividers and their common startup epoch
+	$(PYTHON) scripts/run_verilog.py --mode divider $(VERILOG_ARGS)
+sim-spice-ring: ## Characterize the actual oscillator cells with reset startup
+	$(SIM_RUNTIME) $(SIM_PYTHON) scripts/run_spice.py --jobs $(JOBS) $(SPICE_ARGS)
+	$(SIM_RUNTIME) $(SIM_PYTHON) scripts/check_spice_results.py --scope schematic
+sim-spice-transitions: ## Test live trim changes with extracted transistor RC
+	$(SIM_RUNTIME) $(SIM_PYTHON) scripts/run_spice.py --routed --no-extract --transitions --jobs $(JOBS) $(SPICE_ARGS)
+sim-spice-routed: ## Characterize the oscillator with routed parasitics
+	$(SIM_RUNTIME) $(SIM_PYTHON) scripts/run_spice.py --routed --jobs $(JOBS) $(SPICE_ARGS)
+	$(SIM_RUNTIME) $(SIM_PYTHON) scripts/check_spice_results.py --scope routed
+sim-spice-fine: ## Check routed endpoints at half the transient time step
+	$(SIM_RUNTIME) $(SIM_PYTHON) scripts/run_spice.py --routed --no-extract --fine --jobs $(JOBS)
+	$(SIM_RUNTIME) $(SIM_PYTHON) scripts/check_spice_results.py --scope routed_fine
+	$(SIM_RUNTIME) $(SIM_PYTHON) scripts/check_spice_convergence.py
+sim-spice-finer: ## Run an optional quarter-step endpoint diagnostic
+	$(SIM_RUNTIME) $(SIM_PYTHON) scripts/run_spice.py --routed --no-extract --finer --jobs $(JOBS) $(SPICE_ARGS)
+	$(SIM_RUNTIME) $(SIM_PYTHON) scripts/check_spice_results.py --scope routed_finer
+	$(SIM_RUNTIME) $(SIM_PYTHON) scripts/check_spice_convergence.py
+update-frequency-model: ## Refresh the functional model from the current TT SPICE sweep
+	$(SIM_RUNTIME) $(SIM_PYTHON) scripts/check_spice_results.py --scope routed
+	$(SIM_RUNTIME) $(SIM_PYTHON) scripts/run_spice.py --update-model
+report-images: ## Generate diagrams and plots from the selected completed run
+	$(SIM_RUNTIME) $(REPORT_PYTHON) scripts/report.py
 
-# Testbench extension: prefers <CELL>_tb.sv, falls back to <CELL>_tb.v (dot is added at use site)
-_TB_EXT = $(if $(wildcard $(VERILOG_TB_DIR)/$(CELL)_tb.sv),sv,v)
+test-measurements: ## Test rejection of truncated traces, runt pulses and missing cycles
+	$(SIM_RUNTIME) $(SIM_PYTHON) -B -m unittest discover -s testbenches/python -v
+capture-waveforms: ## Capture settled RTL and SDF windows after passing full regressions
+	$(PYTHON) scripts/capture_waveforms.py --mode rtl
+	$(PYTHON) scripts/capture_waveforms.py --mode gl
+publish-report: ## Copy generated, reviewed report figures into the documentation
+	$(SIM_RUNTIME) $(REPORT_PYTHON) scripts/report.py --publish
+sim-all: ## Run all suites and calibrate the functional model from routed SPICE
+	$(PYTHON) scripts/run_regressions.py
+check-qualification: ## Verify coverage and freshness of all completed suites
+	$(SIM_RUNTIME) $(SIM_PYTHON) scripts/check_qualification.py
+verify: build-top ## Build and run the complete verification suites
+	$(MAKE) sim-all RUN_TAG=$(BUILD_TAG)
+	$(MAKE) check-qualification RUN_TAG=$(BUILD_TAG)
+	$(MAKE) publish-manifest RUN_TAG=$(BUILD_TAG)
+clean: ## Remove ignored build data; preserve sources, figures and final views
+	$(PYTHON) scripts/manage_outputs.py clean
+clean-sim: ## Remove only the selected run's simulation data
+	$(PYTHON) scripts/manage_outputs.py clean-sim
+.PHONY: help librelane build-top check-physical publish-manifest copy-final copy-netlist librelane-openroad librelane-klayout lint-verilog sim-rtl-verilog sim-gl-verilog sim-divider-verilog sim-spice-ring sim-spice-routed update-frequency-model report-images sim-all verify clean clean-sim
 
+.PHONY: check-structure sim-spice-transitions
 
-# Help Target
-help: ## Show this help message
-	@echo 'Usage: make <target> [CELL=<cellname>] [WAVEFORM_VIEWER=<gtkwave|surfer>] [OPEN_ARGS=<options>]'
-	@echo ''
-	@echo 'Available targets:'
-	@grep -E '^[a-zA-Z0-9_.-]+:.*## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "}; {printf "  %-20s %s\n", $$1, $$2}'
-	@echo ''
-	@echo 'CELL defaults to $(TOP). Override to lint or simulate subcells.'
-	@echo 'WAVEFORM_VIEWER defaults to gtkwave. Use surfer to launch Surfer instead.'
-	@echo 'OPEN_ARGS passes extra options to sak-open.py for the open target (e.g. --all).'
-.PHONY: help
-# ================================================================================================
+.PHONY: test-measurements capture-waveforms
 
+.PHONY: sim-spice-fine
 
-# Open Target
-# sak-open.py is vendored from IIC-OSIC-TOOLS (see scripts/.sak-scripts-version)
-open: ## Open the design files of this folder in the sak-open.py file browser (needs a graphical display)
-	python3 $(SCRIPTS_DIR)/sak-open.py $(OPEN_ARGS) .
-.PHONY: open
-# ================================================================================================
+.PHONY: publish-report
 
+.PHONY: check-qualification
 
-# Linter Targets
-lint-verilog: ## Lint Verilog source files with Verilator (usage: make lint-verilog [CELL=<cellname>])
-	verilator --lint-only -I"$(SRC_DIR)" $(_LINT_SRCS)
-.PHONY: lint-verilog
-
-lint-verilog-all: ## Lint all Verilog source files (counter sub-macro + heichips26_digital_project)
-	$(MAKE) -C $(MACROS_DIR)/counter lint-verilog-all
-	$(MAKE) lint-verilog
-.PHONY: lint-verilog-all
-# ================================================================================================
-
-
-# Simulation Targets
-sim-rtl-verilog: ## Run RTL simulation of CELL cell with Icarus Verilog (usage: make sim-rtl-verilog [CELL=<cellname>])
-	iverilog -g2012 -DSIM -o $(VERILOG_TB_DIR)/test_$(CELL) $(_SIM_SRCS) $(VERILOG_TB_DIR)/$(CELL)_tb.$(_TB_EXT)
-	cd $(VERILOG_TB_DIR) && vvp test_$(CELL) -fst
-	rm -f $(VERILOG_TB_DIR)/test_$(CELL)
-.PHONY: sim-rtl-verilog
-
-sim-view-verilog: ## View CELL cell Verilog simulation waveforms (usage: make sim-view-verilog [CELL=<cellname>] [WAVEFORM_VIEWER=<gtkwave|surfer>])
-	@if [ "$(WAVEFORM_VIEWER)" = "gtkwave" ]; then \
-		$(WAVEFORM_VIEWER) $(VERILOG_TB_DIR)/$(CELL)_tb.fst $(VERILOG_TB_DIR)/$(CELL)_tb.gtkw; \
-	elif [ "$(WAVEFORM_VIEWER)" = "surfer" ]; then \
-		$(WAVEFORM_VIEWER) -s $(VERILOG_TB_DIR)/$(CELL)_tb.surf.ron $(VERILOG_TB_DIR)/$(CELL)_tb.fst; \
-	else \
-		$(WAVEFORM_VIEWER) $(VERILOG_TB_DIR)/$(CELL)_tb.fst; \
-	fi
-.PHONY: sim-view-verilog
-
-sim-rtl-cocotb: ## Run RTL simulation of CELL cell with cocotb (usage: make sim-rtl-cocotb [CELL=<cellname>])
-	cd $(COCOTB_DIR) && python3 $(CELL)_tb.py
-.PHONY: sim-rtl-cocotb
-
-sim-gl-cocotb: ## Run gate-level simulation of CELL cell with cocotb (usage: make sim-gl-cocotb [CELL=<cellname>])
-	cd $(COCOTB_DIR) && GL=1 python3 $(CELL)_tb.py
-.PHONY: sim-gl-cocotb
-
-sim-view-cocotb: ## View CELL cell cocotb simulation waveforms (usage: make sim-view-cocotb [CELL=<cellname>] [WAVEFORM_VIEWER=<gtkwave|surfer>])
-	@if [ "$(WAVEFORM_VIEWER)" = "gtkwave" ]; then \
-		$(WAVEFORM_VIEWER) $(COCOTB_DIR)/sim_build/$(CELL).fst $(COCOTB_DIR)/$(CELL)_tb.gtkw; \
-	elif [ "$(WAVEFORM_VIEWER)" = "surfer" ]; then \
-		$(WAVEFORM_VIEWER) -s $(COCOTB_DIR)/$(CELL)_tb.surf.ron $(COCOTB_DIR)/sim_build/$(CELL).fst; \
-	else \
-		$(WAVEFORM_VIEWER) $(COCOTB_DIR)/sim_build/$(CELL).fst; \
-	fi
-.PHONY: sim-view-cocotb
-
-sim-all: ## Simulate the macro (RTL Verilog + RTL/GL cocotb for heichips26_digital_project)
-	$(MAKE) sim-rtl-verilog
-	$(MAKE) sim-rtl-cocotb
-	$(MAKE) sim-gl-cocotb
-.PHONY: sim-all
-# ================================================================================================
-
-
-# LibreLane Targets
-librelane: ## Run LibreLane with Magic and KLayout DRC checks.
-	librelane $(LIBRELANE_DIR)/config.yaml --pdk ${PDK} --pdk-root ${PDK_ROOT} --manual-pdk --save-views-to $(FLOW_FINAL_DIR)/
-.PHONY: librelane
-
-librelane-nodrc: ## Run LibreLane without DRC checks
-	librelane $(LIBRELANE_DIR)/config.yaml --pdk ${PDK} --pdk-root ${PDK_ROOT} --manual-pdk --save-views-to $(FLOW_FINAL_DIR)/ --skip KLayout.DRC --skip Magic.DRC
-.PHONY: librelane-nodrc
-
-librelane-magicdrc: ## Run LibreLane with only Magic DRC checks
-	librelane $(LIBRELANE_DIR)/config.yaml --pdk ${PDK} --pdk-root ${PDK_ROOT} --manual-pdk --save-views-to $(FLOW_FINAL_DIR)/ --skip KLayout.DRC
-.PHONY: librelane-magicdrc
-
-librelane-klayoutdrc: ## Run LibreLane with only KLayout DRC checks
-	librelane $(LIBRELANE_DIR)/config.yaml --pdk ${PDK} --pdk-root ${PDK_ROOT} --manual-pdk --save-views-to $(FLOW_FINAL_DIR)/ --skip Magic.DRC
-.PHONY: librelane-klayoutdrc
-
-librelane-openroad: ## Open the last LibreLane run in OpenROAD GUI
-	librelane $(LIBRELANE_DIR)/config.yaml --pdk ${PDK} --pdk-root ${PDK_ROOT} --manual-pdk --last-run --flow OpenInOpenROAD
-.PHONY: librelane-openroad
-
-librelane-klayout: ## Open the last LibreLane run in KLayout
-	librelane $(LIBRELANE_DIR)/config.yaml --pdk ${PDK} --pdk-root ${PDK_ROOT} --manual-pdk --last-run --flow OpenInKLayout
-.PHONY: librelane-klayout
-# ================================================================================================
-
-
-# Copy Targets
-# Using * wildcard to ignore step numbers
-copy-reports: ## Copy yosys, antenna, STA, power, IR-drop, DRC, LVS and manufacturability reports from the last LibreLane run to verification/
-	rm -rf $(REPORT_DIR)/
-	mkdir -p $(REPORT_DIR)/
-	cp $(LIBRELANE_DIR)/runs/${RUN_TAG}/*-yosys-synthesis/reports/pre_synth_chk.rpt $(REPORT_DIR)/yosys_synth_check.rpt
-	cp $(LIBRELANE_DIR)/runs/${RUN_TAG}/*-yosys-synthesis/reports/pre_techmap.rpt $(REPORT_DIR)/yosys_pre_techmap.rpt
-	cp $(LIBRELANE_DIR)/runs/${RUN_TAG}/*-yosys-synthesis/reports/post_dff.rpt $(REPORT_DIR)/yosys_post_dff.rpt
-	cp $(LIBRELANE_DIR)/runs/${RUN_TAG}/*-yosys-synthesis/reports/stat.rpt $(REPORT_DIR)/stat.rpt
-	cp $(LIBRELANE_DIR)/runs/${RUN_TAG}/*-openroad-checkantennas-1/reports/antenna.rpt $(REPORT_DIR)/antenna_violations.rpt
-	cp $(LIBRELANE_DIR)/runs/${RUN_TAG}/*-openroad-checkantennas-1/reports/antenna_summary.rpt $(REPORT_DIR)/antenna_summary.rpt
-	cp $(LIBRELANE_DIR)/runs/${RUN_TAG}/*-openroad-stapostpnr/summary.rpt $(REPORT_DIR)/stapostpnr_summary.rpt
-	cp $(LIBRELANE_DIR)/runs/${RUN_TAG}/*-openroad-stapostpnr/nom_fast_1p32V_m40C/power.rpt $(REPORT_DIR)/stapostpnr_nom_fast_1p32V_m40C_power.rpt
-	cp $(LIBRELANE_DIR)/runs/${RUN_TAG}/*-openroad-stapostpnr/nom_slow_1p08V_125C/power.rpt $(REPORT_DIR)/stapostpnr_nom_slow_1p08V_125C_power.rpt
-	cp $(LIBRELANE_DIR)/runs/${RUN_TAG}/*-openroad-stapostpnr/nom_typ_1p20V_25C/power.rpt $(REPORT_DIR)/stapostpnr_nom_typ_1p20V_25C_power.rpt
-	cp $(LIBRELANE_DIR)/runs/${RUN_TAG}/*-openroad-irdropreport/irdrop.rpt $(REPORT_DIR)/irdrop.rpt
-	cp $(LIBRELANE_DIR)/runs/${RUN_TAG}/*-magic-drc/reports/drc.magic.rpt $(REPORT_DIR)/drc.magic.rpt
-	cp $(LIBRELANE_DIR)/runs/${RUN_TAG}/*-klayout-drc/reports/drc.klayout.json $(REPORT_DIR)/drc.klayout.json
-	cp $(LIBRELANE_DIR)/runs/${RUN_TAG}/*-netgen-lvs/reports/lvs.netgen.rpt $(REPORT_DIR)/lvs.netgen.rpt
-	cp $(LIBRELANE_DIR)/runs/${RUN_TAG}/*-misc-reportmanufacturability/manufacturability.rpt $(REPORT_DIR)/manufacturability.rpt
-.PHONY: copy-reports
-
-copy-final: ## Copy final output gds, lef, lib, nl, pnl, spef, vh and render folders from the last LibreLane run to final/
-	rm -rf $(FINAL_DIR)/
-	mkdir -p $(FINAL_DIR)/
-	cp -r $(FLOW_FINAL_DIR)/gds    $(FINAL_DIR)/gds
-	cp -r $(FLOW_FINAL_DIR)/lef    $(FINAL_DIR)/lef
-	cp -r $(FLOW_FINAL_DIR)/lib    $(FINAL_DIR)/lib
-	cp -r $(FLOW_FINAL_DIR)/nl     $(FINAL_DIR)/nl
-	cp -r $(FLOW_FINAL_DIR)/pnl    $(FINAL_DIR)/pnl
-	cp -r $(FLOW_FINAL_DIR)/spef   $(FINAL_DIR)/spef
-	cp -r $(FLOW_FINAL_DIR)/vh     $(FINAL_DIR)/vh
-	cp -r $(FLOW_FINAL_DIR)/render $(FINAL_DIR)/render
-.PHONY: copy-final
-
-copy-netlist: ## Copy final output spice, pnl and nl netlists from the last LibreLane run to netlist/
-	rm -rf $(NET_SPICE_DIR)/
-	mkdir -p $(NET_SPICE_DIR)/
-	cp -r $(FLOW_FINAL_DIR)/spice/${TOP}.spice $(NET_SPICE_DIR)/${TOP}.spice
-
-	rm -rf $(NET_PNL_DIR)/
-	mkdir -p $(NET_PNL_DIR)/
-	cp -r $(FLOW_FINAL_DIR)/pnl/${TOP}.pnl.v $(NET_PNL_DIR)/${TOP}.pnl.v
-
-	rm -rf $(NET_NL_DIR)/
-	mkdir -p $(NET_NL_DIR)/
-	cp -r $(FLOW_FINAL_DIR)/nl/${TOP}.nl.v $(NET_NL_DIR)/${TOP}.nl.v
-.PHONY: copy-netlist
-# ================================================================================================
-
-
-# Build Targets
-build-counter: ## Lint, build, verify and simulate the counter macro
-	@$(MAKE) -C $(MACROS_DIR)/counter all
-.PHONY: build-counter
-
-build-macros: ## Lint, build, verify and simulate all macros
-	$(MAKE) build-counter
-#	ToDo: further macros
-.PHONY: build-macros
-
-build-fpga: ## Build FPGA bitstream (usage: make build-fpga [BOARD=ulx3s])
-	@$(MAKE) -C fpga all
-.PHONY: build-fpga
-
-load-fpga: ## Load FPGA bitstream into SRAM (usage: make load-fpga [BOARD=ulx3s])
-	@$(MAKE) -C fpga load_bitstream
-.PHONY: load-fpga
-
-flash-fpga: ## Write FPGA bitstream to flash (usage: make flash-fpga [BOARD=ulx3s])
-	@$(MAKE) -C fpga flash_bitstream
-.PHONY: flash-fpga
-
-build-top: ## Build macro (run LibreLane with KLayout & Magic DRC checks, copy reports, copy final files, and copy netlists)
-	$(MAKE) librelane
-	$(MAKE) copy-reports
-	$(MAKE) copy-final
-	$(MAKE) copy-netlist
-#	$(MAKE) librelane-openroad
-.PHONY: build-top
-# ================================================================================================
-
-
-# DRC & LVS Verification Targets
-# The LibreLane flow already includes DRC and LVS checks with Magic and KLayout, and they are saved in the verification/ folder.
-# ================================================================================================
-
-
-# Lint, Build, Verify and Simulate All Target
-all: ## Lint, build, verify and simulate the macros and the TOP cell
-	$(MAKE) lint-verilog-all
-	$(MAKE) build-macros
-	$(MAKE) build-fpga
-	$(MAKE) build-top
-	$(MAKE) sim-all
-.PHONY: all
-# ================================================================================================
-
-
-# Clean Targets
-clean: ## Delete all generated files and folders of the TOP cell (LibreLane outputs, final, netlist, reports, simulation and FPGA outputs)
-	rm -rf $(LIBRELANE_DIR)/runs $(FLOW_FINAL_DIR)
-	rm -rf final netlist
-	rm -rf $(REPORT_DIR)
-	rm -rf $(COCOTB_DIR)/sim_build $(VERILOG_TB_DIR)/*.fst
-	@$(MAKE) -C fpga clean
-.PHONY: clean
-
-clean-counter: ## Delete all generated files and folders of the counter macro
-	@$(MAKE) -C $(MACROS_DIR)/counter clean
-.PHONY: clean-counter
-
-clean-macros: ## Delete all generated files and folders of all macros
-	$(MAKE) clean-counter
-#	ToDo: further macros
-.PHONY: clean-macros
-
-clean-all: ## Delete all generated files and folders of the macros and the TOP cell
-	$(MAKE) clean-macros
-	$(MAKE) clean
-.PHONY: clean-all
-# ================================================================================================
+.PHONY: sim-spice-finer

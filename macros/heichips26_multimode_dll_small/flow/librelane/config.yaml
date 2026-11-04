@@ -1,52 +1,54 @@
-# SPDX-FileCopyrightText: 2026 The HeiChips Contributors
-# SPDX-License-Identifier: Apache-2.0 WITH SHL-2.1
-#
-# LibreLane configuration file
-
+# Flat standard-cell DLL in the fixed 200 x 200 um analog template.
 meta:
   version: 3
-  flow: Classic
+  flow: SmallDLLFlow
   substituting_steps:
-
-    # Magic reports some overlaps which can be ignored
-    Checker.IllegalOverlap: null
+    OpenROAD.CTS: SmallDLL.ControllerCTS
+    Checker.NetlistAssignStatements: null
 
 DESIGN_NAME: heichips26_multimode_dll_small
-VERILOG_FILES: dir::../../rtl/*.sv
+VERILOG_FILES:
+  - dir::../../rtl/heichips26_multimode_dll_small.sv
 CLOCK_PORT: clk
-CLOCK_NET: clk
-CLOCK_PERIOD: 10 # 10ns = 100MHz
-
-# SDC files
+CLOCK_PERIOD: 2.5
 PNR_SDC_FILE: dir::impl.sdc
 SIGNOFF_SDC_FILE: dir::signoff.sdc
-
-# Reduce wasted space
+FP_SIZING: absolute
+DIE_AREA: [0, 0, 200, 200]
+FP_DEF_TEMPLATE: dir::heichips26_template_tiny_analog.def
 TOP_MARGIN_MULT: 1
 BOTTOM_MARGIN_MULT: 1
 LEFT_MARGIN_MULT: 6
 RIGHT_MARGIN_MULT: 6
 
-# Absolute die size
-FP_SIZING: absolute
-
-# Tiny DEF template
-#DIE_AREA: [0, 0, 200, 200]
-#FP_DEF_TEMPLATE: dir::heichips26_template_tiny.def
-
-# Small DEF template
-DIE_AREA: [0, 0, 500, 200]
-FP_DEF_TEMPLATE: dir::heichips26_template_tiny_analog.def
-
-# Large DEF template
-#DIE_AREA: [0, 0, 500, 415]
-#FP_DEF_TEMPLATE: dir::heichips26_template_large.def
-
-# Don't use power rings or TopMetal1 layer
+SYNTH_HIERARCHY_MODE: keep
+SYNTH_STRATEGY: AREA 0
+SYNTH_SHARE_RESOURCES: false
+SYNTH_DIRECT_WIRE_BUFFERING: false
+SYNTH_TIE_UNDEFINED: null
+ERROR_ON_SYNTH_CHECKS: true
+SYNTH_CHECKS_ALLOW_TRISTATE: false
+RSZ_DONT_TOUCH_RX: '^(u_dll/(u_ring/|u_ref_buffer/|u_controller_buffer/|u_startup_buffer/|u_div[01]_buffer/|u_div[01]/u_|ring_clk$|divider_clk)|u_fabric[01]/|u_pad[01]/|analog_[01]$|uo_out\[[01]\]$)'
+DESIGN_REPAIR_BUFFER_INPUT_PORTS: false
+DESIGN_REPAIR_BUFFER_OUTPUT_PORTS: false
 PDN_MULTILAYER: false
-RT_MAX_LAYER: Metal4
 PDN_VERTICAL_LAYER: Metal4
 PDN_HORIZONTAL_LAYER: Metal3
-
-# Enable for better SystemVerilog support
-#USE_SLANG: true
+RT_MIN_LAYER: Metal2
+RT_MAX_LAYER: Metal4
+OPENROAD_THREADS: 4
+GPL_CELL_PADDING: 0
+DPL_CELL_PADDING: 0
+DLL_RING_REGION: [105, 20, 195, 90]
+CTS_SINK_CLUSTERING_SIZE: 8
+CTS_DISTANCE_BETWEEN_BUFFERS: 40
+RUN_POST_GRT_RESIZER_TIMING: true
+PL_RESIZER_SETUP_SLACK_MARGIN: 0.35
+GRT_RESIZER_SETUP_SLACK_MARGIN: 0.35
+PL_RESIZER_HOLD_SLACK_MARGIN: 0.05
+GRT_RESIZER_HOLD_SLACK_MARGIN: 0.05
+TIMING_VIOLATION_CORNERS: ['*']
+SETUP_VIOLATION_CORNERS: ['*']
+HOLD_VIOLATION_CORNERS: ['*']
+MAX_SLEW_VIOLATION_CORNERS: ['*']
+MAX_CAP_VIOLATION_CORNERS: ['*']

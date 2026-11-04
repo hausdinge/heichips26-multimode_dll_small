@@ -1,0 +1,6 @@
+* Parallelism is across independent cases; avoid nested OpenMP workers.
+set num_threads=1
+* Generated per run; OSDI links point to the selected PDK's OpenVAF models.
+setcs sourcepath = ( "@MODEL_DIR@" )
+osdi psp103.osdi
+osdi psp103_nqs.osdi

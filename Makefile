@@ -52,13 +52,28 @@ klayout-setup: ## Install the KLayout plugins in your user directory
 .PHONY: klayout-setup
 
 precheck: $(PDK_ROOT)/$(PDK) ## Run the precheck on the design specified in submission.yaml
-	PDK_ROOT=$(PDK_ROOT) PDK=$(PDK) python3 .github/precheck/heichips_precheck.py --config submission.yaml
+	PDK_ROOT=$(PDK_ROOT) PDK=$(PDK) python3 macros/heichips26_multimode_dll_small/scripts/run_backend.py --tool python3 .github/precheck/heichips_precheck.py --config submission.yaml
 .PHONY: precheck
 
 precheck-demo: $(PDK_ROOT)/$(PDK) ## Run the demo precheck (don't use for submission)
-	PDK_ROOT=$(PDK_ROOT) PDK=$(PDK) python3 .github/precheck/heichips_precheck.py --config submission.yaml --demo
+	PDK_ROOT=$(PDK_ROOT) PDK=$(PDK) python3 macros/heichips26_multimode_dll_small/scripts/run_backend.py --tool python3 .github/precheck/heichips_precheck.py --config submission.yaml --demo
 .PHONY: precheck-demo
 
 klayout: $(PDK_ROOT)/$(PDK) ## Open KLayout (edit mode)
 	KLAYOUT_PATH=$(PDK_ROOT)/$(PDK)/libs.tech/klayout/ klayout -e -n sg13cmos5l -c $(MAKEFILE_DIR)/config/klayoutrc
 .PHONY: klayout
+
+# Flat small-DLL project
+SMALL_DLL_DIR := macros/heichips26_multimode_dll_small
+build-top: ## Build and publish the complete flat small DLL
+	$(MAKE) -C $(SMALL_DLL_DIR) build-top
+verify: ## Build and run small-DLL verification
+	$(MAKE) -C $(SMALL_DLL_DIR) verify
+librelane-openroad librelane-klayout sim-all report-images: ## Delegate to the small-DLL project
+	$(MAKE) -C $(SMALL_DLL_DIR) $@
+.PHONY: build-top verify librelane-openroad librelane-klayout sim-all report-images
+
+clean: ## Remove generated run and precheck data; preserve sources and final views
+	$(MAKE) -C $(SMALL_DLL_DIR) clean
+	rm -rf -- "$(MAKEFILE_DIR)/build"
+.PHONY: clean

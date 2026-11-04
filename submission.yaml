@@ -1,35 +1,21 @@
-# This the configuration file for your submission.
-# Please edit the fields below to match your project.
-
-project-name: Cool Project
-top-cell: "heichips26_digital_project" # Must be a unique name
+project-name: Small standard-cell clock generator
+top-cell: heichips26_multimode_dll_small
 team-members:
-- Firstname Lastname
-- Firstname Lastname
-- Firstname Lastname
-slot-size: small # small, large, tiny
-analog-pins: 0 # 0-3, only for small or tiny projects
-uses-vapwr: false # set to "true" if separate analog power domain is needed
-short-description: This is a super cool project!
-# Please add the documentation about your project here.
-# Why did you choose to create it? How does it work? How can it be tested, etc.?
-# If your project requires additional external hardware, e.g. a USB port,
-# please mention this so we can consider it when designing the HeiChips PCB.
+  - Kevin Klein
+  - Nils Kissner
+slot-size: tiny
+analog-pins: 2
+uses-vapwr: false
+short-description: Frequency multiplication with two related programmable divided clocks.
 long-description: |
-  Is this thing on?
-  
-  This is a super cool project 👏
-  
-  * with
-  * bullet
-  * points
-  
-  **nice** *formatting* and [links](https://heichips.github.io/).
-
-# These paths are used to verify your
-# submission during the precheck.
-# Wildcards are allowed, but there
-# should only be a single match.
-gds-path: macros/heichips26_digital_project/final/gds/*.gds
-lef-path: macros/heichips26_digital_project/final/lef/*.lef
-header-path: macros/heichips26_digital_project/final/vh/*.vh
+  A flat standard-cell frequency-locked loop in the fixed 200 x 200 um tiny
+  analog template. One tunable ring oscillator drives two integer dividers.
+  A five-bit multiplier and two five-bit dividers are configured in parallel.
+  Both outputs share a reset epoch; their phase is not locked to the reference.
+  The design uses no tri-state or dedicated delay-gate cells.
+  The two clock outputs are available to the fabric and on analog_0/analog_1.
+  See macros/heichips26_multimode_dll_small/README.md for configuration,
+  measurement conditions, verification results and reproducible commands.
+gds-path: macros/heichips26_multimode_dll_small/final/gds/*.gds
+lef-path: macros/heichips26_multimode_dll_small/final/lef/*.lef
+header-path: macros/heichips26_multimode_dll_small/final/vh/*.vh

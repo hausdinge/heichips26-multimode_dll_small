@@ -1,0 +1,333 @@
+{
+  "run_tag": "CELLMAP_20261104_1038",
+  "top": "heichips26_multimode_dll_small",
+  "implementation_inputs": {
+    "flow/librelane/config.yaml": "ee026baf88c70d42d7e51277db35f03fdf7ef92e8ebb7d530ac435110aed1788",
+    "flow/librelane/heichips26_template_large.def": "29284270d2fc2d7ff4fbffead6ca02e3c6cd5955c62adbd21b1acc3555e0fd2e",
+    "flow/librelane/heichips26_template_small.def": "5231d4303ddf690dcd11a037493c716b20e0058f348b77f674f0076379cd4acd",
+    "flow/librelane/heichips26_template_small_analog.def": "f2edf0f826f4c36b0ca2af891ffca19e0480c5f55303103f662c5ec9a7a0f320",
+    "flow/librelane/heichips26_template_tiny.def": "a5ab21b55c3c47752a8d754d1184ee0696c2a3d80ddb6d506ef57843a635db67",
+    "flow/librelane/heichips26_template_tiny_analog.def": "5921a1eb641447b5a20aacccb8f342ecb88c930dc06524df0e2de17e54e36f58",
+    "flow/librelane/impl.sdc": "585ebc55d96551fe3c7e77ddfca0845c77ae12b17530de261a4a99d70f45481b",
+    "flow/librelane/signoff.sdc": "281475fcdcd497191d07b868272b867216d97caca34bf30af7ca026ee9c7fe31",
+    "flow/librelane/timing_common.tcl": "d6d6980dd88498e3571e2d52475df23b2d2442c43d65a101020e6570b5fc8046",
+    "rtl/cell_map.v": "385be629306f889b1764a01bd60de0e514392a11a9780e34e7bef1295d0ef8e6",
+    "rtl/graded_fll_controller.v": "f0d44bfe4abefcec35ab6bb66152d5c01224edee45b97dee0bc07af842f317f8",
+    "rtl/heichips26_multimode_dll_small.sv": "99d56a02b50cc806be91a07c25e1b6f798c87124bdcfb8c9101bc3995966b64d",
+    "rtl/multimode_dll_small.v": "61bcc8818a69f8a4054facdce83cab16a15045efb72a24aa3db8c4b8ffd5c431",
+    "rtl/output_divider.v": "fd84614c2251b55d4dc21c41da8e8c2548e0191c9a5f19a46d09b3e94cc4e723",
+    "rtl/ring_oscillator.v": "4e44b58fdf032cfd4a00ce1c627a3dbd69f54ca0fde8d9e3df42ce93e9963a49",
+    "scripts/ring_region.py": "b466389886d8f077d0f107d87d337d3d4305a021efb39d2846ac7073b6dd5fc4",
+    "scripts/run_backend.py": "e33dffec258cef63a59bd49a142d5a2441b0940365af4970c4f16c5cd07c3594"
+  },
+  "template_sha256": "5921a1eb641447b5a20aacccb8f342ecb88c930dc06524df0e2de17e54e36f58",
+  "verification": {
+    "physical_summary": {
+      "passed": true,
+      "errors": [],
+      "physical_counts": {
+        "route__drc_errors": 0,
+        "magic__drc_error__count": 0,
+        "klayout__drc_error__count": 0,
+        "magic__illegal_overlap__count": 0,
+        "design__lvs_error__count": 0,
+        "antenna__violating__nets": 0,
+        "antenna__violating__pins": 0
+      },
+      "electrical_counts": {
+        "design__max_slew_violation__count": 0,
+        "design__max_slew_violation__count__corner:nom_fast_1p32V_m40C": 0,
+        "design__max_slew_violation__count__corner:nom_typ_1p20V_25C": 0,
+        "design__max_slew_violation__count__corner:nom_slow_1p08V_125C": 0,
+        "design__max_cap_violation__count": 0,
+        "design__max_cap_violation__count__corner:nom_fast_1p32V_m40C": 0,
+        "design__max_cap_violation__count__corner:nom_typ_1p20V_25C": 0,
+        "design__max_cap_violation__count__corner:nom_slow_1p08V_125C": 0,
+        "design__max_fanout_violation__count": 0,
+        "design__max_fanout_violation__count__corner:nom_fast_1p32V_m40C": 0,
+        "design__max_fanout_violation__count__corner:nom_typ_1p20V_25C": 0,
+        "design__max_fanout_violation__count__corner:nom_slow_1p08V_125C": 0
+      },
+      "metrics_sha256": "b54b2ee6d400a8ec2a1cb7deb8e45238ee3603f2ea8b89b4c31cc3855307428a"
+    },
+    "layout": {
+      "passed": true,
+      "errors": [],
+      "die_um": [
+        0,
+        0,
+        200,
+        200
+      ],
+      "template_pins_checked": 46,
+      "oscillator_cells": 304,
+      "power_pins_connected": 6096,
+      "odb_sha256": "e74aaab4530d3c3f0b441f9d15bb03a77125f8afbb8472344ecb0c73ba7f36c3",
+      "template_sha256": "5921a1eb641447b5a20aacccb8f342ecb88c930dc06524df0e2de17e54e36f58"
+    },
+    "reset_electrical/summary": {
+      "passed": true,
+      "scope": "All electrical paths with external reset, enable and common startup release unconstrained by case analysis",
+      "input_sha256": {
+        "/home/hausding/Documents/Projects/multimode_dll/heichips26-multimode_dll_small/macros/heichips26_multimode_dll_small/scripts/check_reset_electrical.py": "a05e46cf81d5923de91956b51475ab4b3ad952ea88bfa47c1fd7db72081773e7",
+        "/home/hausding/Documents/Projects/multimode_dll/heichips26-multimode_dll_small/macros/heichips26_multimode_dll_small/scripts/run_backend.py": "e33dffec258cef63a59bd49a142d5a2441b0940365af4970c4f16c5cd07c3594",
+        "/home/hausding/Documents/Projects/multimode_dll/heichips26-multimode_dll_small/macros/heichips26_multimode_dll_small/build/CELLMAP_20261104_1038/views/nl/heichips26_multimode_dll_small.nl.v": "1a56845366d31e227b0190bff075988d242f21815355ff8bf8636fcd97cad196",
+        "/home/hausding/Documents/Projects/multimode_dll/heichips26-multimode_dll_small/macros/heichips26_multimode_dll_small/build/CELLMAP_20261104_1038/views/spef/nom/heichips26_multimode_dll_small.nom.spef": "b08f7aa05f5d87fe172d32cd3bd273d858d4262582e69eb4732619511c040777",
+        "/home/hausding/Documents/Projects/multimode_dll/heichips26-multimode_dll_small/macros/heichips26_multimode_dll_small/flow/librelane/timing_common.tcl": "d6d6980dd88498e3571e2d52475df23b2d2442c43d65a101020e6570b5fc8046",
+        "/home/hausding/Documents/Projects/multimode_dll/heichips26-multimode_dll/IHP-Open-PDK/ihp-sg13cmos5l/libs.ref/sg13cmos5l_stdcell/lib/sg13cmos5l_stdcell_typ_1p20V_25C.lib": "34163f3e7de9f854afac57332ba06f1739b78e7ac35660a8a5ddd39c570124ad",
+        "/home/hausding/Documents/Projects/multimode_dll/heichips26-multimode_dll/IHP-Open-PDK/ihp-sg13cmos5l/libs.ref/sg13cmos5l_stdcell/lib/sg13cmos5l_stdcell_slow_1p08V_125C.lib": "3ee222c580ba33acb2131ac2bf224ff8ee9700751835b73aaec72b670bb31d3c",
+        "/home/hausding/Documents/Projects/multimode_dll/heichips26-multimode_dll/IHP-Open-PDK/ihp-sg13cmos5l/libs.ref/sg13cmos5l_stdcell/lib/sg13cmos5l_stdcell_fast_1p32V_m40C.lib": "af12d75a72d19648fa690027d29843fbae550aa91f4e40dd3339c7116d6e425d"
+      },
+      "results": [
+        {
+          "corner": "typ_1p20V_25C",
+          "passed": true,
+          "violations": {
+            "max_fanout": [],
+            "max_capacitance": [],
+            "max_slew": []
+          },
+          "log_sha256": "fa48b946ab8b251af704e55dae734918ce808bcad742589f42eadec5957e33e1"
+        },
+        {
+          "corner": "slow_1p08V_125C",
+          "passed": true,
+          "violations": {
+            "max_fanout": [],
+            "max_capacitance": [],
+            "max_slew": []
+          },
+          "log_sha256": "fa48b946ab8b251af704e55dae734918ce808bcad742589f42eadec5957e33e1"
+        },
+        {
+          "corner": "fast_1p32V_m40C",
+          "passed": true,
+          "violations": {
+            "max_fanout": [],
+            "max_capacitance": [],
+            "max_slew": []
+          },
+          "log_sha256": "fa48b946ab8b251af704e55dae734918ce808bcad742589f42eadec5957e33e1"
+        }
+      ],
+      "failures": []
+    },
+    "structure": {
+      "protected_cells": 328,
+      "missing_cells": [],
+      "changed_cell_types": {},
+      "changed_connections": {},
+      "intentionally_unloaded_outputs": [],
+      "unexpected_floating_output_loads": {},
+      "protected_type_counts": {
+        "sg13cmos5l_a21oi_2": 13,
+        "sg13cmos5l_and2_2": 17,
+        "sg13cmos5l_buf_1": 13,
+        "sg13cmos5l_buf_16": 2,
+        "sg13cmos5l_buf_2": 16,
+        "sg13cmos5l_buf_4": 17,
+        "sg13cmos5l_buf_8": 5,
+        "sg13cmos5l_dfrbpq_1": 52,
+        "sg13cmos5l_inv_1": 56,
+        "sg13cmos5l_inv_2": 31,
+        "sg13cmos5l_inv_4": 1,
+        "sg13cmos5l_nand2_1": 13,
+        "sg13cmos5l_nand2_2": 64,
+        "sg13cmos5l_nand3_1": 13,
+        "sg13cmos5l_nor2_2": 13,
+        "sg13cmos5l_or2_1": 2
+      },
+      "forbidden_cells": {
+        "reference": {},
+        "candidate": {}
+      },
+      "passed": true
+    },
+    "qualification": {
+      "passed": true,
+      "run_tag": "CELLMAP_20261104_1038",
+      "failures": [],
+      "checked_reports_sha256": {
+        "verification/physical_summary.json": "bb318d310bda4e81b0246c44ea0bfa0bbe99c4a0642665b8b2caaf545b3ff4df",
+        "verification/layout.json": "86674b5789e68d8bb8976544e816c5edfff76fa3083ed2557e488180ada62d97",
+        "verification/structure/summary.json": "1a3c50d030c37678876455303d731a7dd549aa22c72abdb7a647d3c2e499c017",
+        "verification/reset_electrical/summary.json": "cbc98047a35166b072be80082c9327c880ed8837d07796918ec81f1beff697f8",
+        "simulation/verilog/divider/summary.json": "e4a86fd6ab66feae53b5b6d28c62aaebb50aeff30a93e26c15b235afcb798247",
+        "simulation/verilog/rtl/summary.json": "8dc547c49715a1cf2497443b05c973ac8fdd4314a0ab5c5a94a30c49c5ea93df",
+        "simulation/verilog/gl/summary.json": "4dc327b76b2be96320602f6738f807e7a4d71bd0506e69c06fb6a34497cb7b2f",
+        "simulation/ngspice/schematic/summary.json": "f99e62411865c0d47aed1bc9478b1136d357468f50b9bbf2a7343e2ea34cfd68",
+        "verification/spice_results/schematic.json": "d67e6e6fa44476f2419fa5fe5a36e4edacd081a80c1d685e39e1fa01bd3580bb",
+        "simulation/ngspice/routed/summary.json": "82720e98e975a76f3838d61963a5b00bbaf510b4f01e1d5a06ebff4e02b11236",
+        "verification/spice_results/routed.json": "14939a5dac673d833349720a7cebd800dea877048091a3a8b64417b3f0f35172",
+        "simulation/ngspice/routed_fine/summary.json": "520841a34a2eb19f6fecce96f48906df940b1ae927b7cb146704ade86d209ae9",
+        "verification/spice_results/routed_fine.json": "defc842dac571e6a8e8ce9b9200d278063d8887f462b8025cb5ba916acd0faee",
+        "verification/spice_results/convergence.json": "9963b173cfa2f8b0dc2e9712eb65b048ebc18f3c77a8e697a51b5f4c10fa6cea",
+        "simulation/ngspice/routed_transitions/summary.json": "9a09c9ec056870a8d04c4062bb0d8080f568096c1aa3e99ff3694860869f03be",
+        "verification/helper_tests.log": "c8f715674e812078b7093f960ff99de8030284bf69c869ae20d22a061c17b624"
+      },
+      "source_sha256": {
+        "flow/librelane/config.yaml": "ee026baf88c70d42d7e51277db35f03fdf7ef92e8ebb7d530ac435110aed1788",
+        "flow/librelane/heichips26_template_large.def": "29284270d2fc2d7ff4fbffead6ca02e3c6cd5955c62adbd21b1acc3555e0fd2e",
+        "flow/librelane/heichips26_template_small.def": "5231d4303ddf690dcd11a037493c716b20e0058f348b77f674f0076379cd4acd",
+        "flow/librelane/heichips26_template_small_analog.def": "f2edf0f826f4c36b0ca2af891ffca19e0480c5f55303103f662c5ec9a7a0f320",
+        "flow/librelane/heichips26_template_tiny.def": "a5ab21b55c3c47752a8d754d1184ee0696c2a3d80ddb6d506ef57843a635db67",
+        "flow/librelane/heichips26_template_tiny_analog.def": "5921a1eb641447b5a20aacccb8f342ecb88c930dc06524df0e2de17e54e36f58",
+        "flow/librelane/impl.sdc": "585ebc55d96551fe3c7e77ddfca0845c77ae12b17530de261a4a99d70f45481b",
+        "flow/librelane/signoff.sdc": "281475fcdcd497191d07b868272b867216d97caca34bf30af7ca026ee9c7fe31",
+        "flow/librelane/timing_common.tcl": "d6d6980dd88498e3571e2d52475df23b2d2442c43d65a101020e6570b5fc8046",
+        "rtl/cell_map.v": "385be629306f889b1764a01bd60de0e514392a11a9780e34e7bef1295d0ef8e6",
+        "rtl/graded_fll_controller.v": "f0d44bfe4abefcec35ab6bb66152d5c01224edee45b97dee0bc07af842f317f8",
+        "rtl/heichips26_multimode_dll_small.sv": "99d56a02b50cc806be91a07c25e1b6f798c87124bdcfb8c9101bc3995966b64d",
+        "rtl/multimode_dll_small.v": "61bcc8818a69f8a4054facdce83cab16a15045efb72a24aa3db8c4b8ffd5c431",
+        "rtl/output_divider.v": "fd84614c2251b55d4dc21c41da8e8c2548e0191c9a5f19a46d09b3e94cc4e723",
+        "rtl/ring_oscillator.v": "4e44b58fdf032cfd4a00ce1c627a3dbd69f54ca0fde8d9e3df42ce93e9963a49",
+        "scripts/.sak-scripts-version": "226f40cf6be48c8f5ee459dc162d8b163049fdb9c726ee16ebcae23d3a62d21e",
+        "scripts/build_paths.py": "487ab922e6cd5c5c66ebbaad621e38f1a5fa9d4f3dfa007393e945bc968250ef",
+        "scripts/capture_waveforms.py": "67710ef72e61de8c384726331e0f80bbfa616b12aed65b04ab7811d382a3c00e",
+        "scripts/check_layout.py": "b4f7f3594e488ffdb5f1aba3be8a7581dfe7db5d138e31b33c68f7ee765c10d0",
+        "scripts/check_physical_metrics.py": "10e006b76074b8b3a765787f9d657817ae872624ece1e382bf4213744d16cba8",
+        "scripts/check_qualification.py": "bb0f4ea3b2ed82b4b687f73ed68d8fb993643267a0d61b6395325128ec0bf2de",
+        "scripts/check_reset_electrical.py": "a05e46cf81d5923de91956b51475ab4b3ad952ea88bfa47c1fd7db72081773e7",
+        "scripts/check_spice_convergence.py": "a2a67a47f75a5d7607f0b55903daa40ffcd2f8b82c6290a2585c75c62655495e",
+        "scripts/check_spice_results.py": "2a19e8b57cd985b8d7b5335856296d7898c1cb02559be13c86bf68fd03e94582",
+        "scripts/check_structure.py": "b7115b1531471011f70a355014fe63f3b67613062be982c9a55c89737aeb1b88",
+        "scripts/export_placement.py": "6bb68ecf0c91308f0998225d462fb42da94c4e91eeb66ba4f13f322d40a8bd80",
+        "scripts/export_ring_spice.py": "7ce735595c53dd5a0d6287f52934a5385ef47ee8a6f25f465434408adb2bbf69",
+        "scripts/extract_ring_view.py": "431bd7de1dd8e5ea0e1e2ec09172d6491e9d508d3f99fe7f752f7567d81e8e32",
+        "scripts/manage_outputs.py": "b054cdf492d4b47ea9b6463c6a3a955183e900a060af7d364d6c9cb726c9999b",
+        "scripts/prepare_sdf.py": "a8e4898ace570db48d78bfc9e33b18e8e86c78ffa3eb70b59d3bfff638bb7ecc",
+        "scripts/report.py": "02ac43cb996ef1aaa33d805aa1513fbe698560b2b7f5866c6682fc6afbf8c4d5",
+        "scripts/ring_region.py": "b466389886d8f077d0f107d87d337d3d4305a021efb39d2846ac7073b6dd5fc4",
+        "scripts/run_backend.py": "e33dffec258cef63a59bd49a142d5a2441b0940365af4970c4f16c5cd07c3594",
+        "scripts/run_regressions.py": "01b443a0bb86029d4bc363d6dc143149ac0cdcef65c5d4d8260963334a9a9a60",
+        "scripts/run_spice.py": "b61ee0e4f04ac19912a2812155ed82d367044067bc6c1c94a6a66fa483c25696",
+        "scripts/run_structure_check.py": "cdae77a7d1acf663b408973c0160f26e78c2d182db7e69ef399714109b56190a",
+        "scripts/run_verilog.py": "b413a2c415e372d1a313394990e2be93dda70f2f1accb4a23efe4b3f019fa260",
+        "scripts/sak-open.py": "3da57eafcacc97037fc314a74c9c24a479ef673f694944b783d049c01702515b",
+        "scripts/sak-pex.sh": "1a1536454fdd3ba01d795daacc65aa004f8493bed69aaf19090d56cc17043fcf",
+        "scripts/scalarize_sim.py": "c67e3ceab7235bbe53bfab0d5a5c54d5083534f6d92367cb9c2514e7d17a6ccf",
+        "scripts/stream_ring_view.py": "daf375989403e7bec9f5a92b9f39e6ef3ebcf3779b3d768f7740bd35ece6b481",
+        "scripts/view_waveform.py": "bef18ba12cd9a2d218d5e6edb7c75dec51b04c27e16d0ca5552bba6255c15e0b",
+        "testbenches/ngspice/oscillator.json": "cecb54e0c5f43f83e50a7ff95c3d083df8a50adce7578c375685871b50dc8362",
+        "testbenches/ngspice/spiceinit.template": "d9c199775724d0f46735be0d93d1c5aae02e2d6767dc2baba2f3ee93d56713db",
+        "testbenches/python/test_measurements.py": "0ee3a97b07842ee5a65f49c326efc4c11e173ad9b9d3bc9f9fcc845deeec7a89",
+        "testbenches/python/test_regression_order.py": "85bdebec3832f872490c0b2989aa4ef294ef84b4f5bea19cb80d00079530ea76",
+        "testbenches/python/test_simulation_runner.py": "4e60c95c9f0116bc0f79c9619c21b9ec99cb884c2d6dd5724f611aaaff3463b8",
+        "testbenches/python/test_spice_runner.py": "ae85e8f6630e240ce68c94f1c8754c25cb0ef2c8764b9d702666c2d8b053cc3f",
+        "testbenches/verilog/divider_tb.sv": "688c32efb7e91c223f1d4860fd83cb26eb10e021b99f7fbefb1f48b0024a9fcd",
+        "testbenches/verilog/frequency_table.vh": "3d7a4a746044bd19574eeeb6c5bd6ce21611931e33dc102fdf0d13e1fc0eb19d",
+        "testbenches/verilog/ring_model.vh": "57e5c627d62c52f48a0139648571689055fd5dac382cf46ecc53a699a7a18eb5",
+        "testbenches/verilog/small_dll_tb.sv": "f36bdbe52947184ff7cfd4980b68d715108e3191eb5f9689adf8fe8760d8e2ee",
+        "testbenches/verilog/trim_map.vh": "1df2b6a1544205f58c8919826c842eba37c4e827a475ced0a68ce5839a2e6029",
+        "testbenches/verilog/wave_capture.sv": "122ec136178298f7e98b2d6b0468f5d6ade05608c849567c157dfb8a185e3763"
+      },
+      "scope": "Physical signoff metrics, RTL/all-cell SDF, oscillator PVT endpoints, full nominal trim sweep and directed live trim"
+    }
+  },
+  "simulation_summaries": {
+    "simulation/ngspice/routed/summary.json": {
+      "passed": true,
+      "status": "complete",
+      "sha256": "82720e98e975a76f3838d61963a5b00bbaf510b4f01e1d5a06ebff4e02b11236"
+    },
+    "simulation/ngspice/routed_fine/summary.json": {
+      "passed": true,
+      "status": "complete",
+      "sha256": "520841a34a2eb19f6fecce96f48906df940b1ae927b7cb146704ade86d209ae9"
+    },
+    "simulation/ngspice/routed_transitions/summary.json": {
+      "passed": true,
+      "status": "complete",
+      "sha256": "9a09c9ec056870a8d04c4062bb0d8080f568096c1aa3e99ff3694860869f03be"
+    },
+    "simulation/ngspice/schematic/summary.json": {
+      "passed": true,
+      "status": "complete",
+      "sha256": "f99e62411865c0d47aed1bc9478b1136d357468f50b9bbf2a7343e2ea34cfd68"
+    },
+    "simulation/verilog/divider/summary.json": {
+      "passed": true,
+      "status": "complete",
+      "sha256": "e4a86fd6ab66feae53b5b6d28c62aaebb50aeff30a93e26c15b235afcb798247"
+    },
+    "simulation/verilog/gl/summary.json": {
+      "passed": true,
+      "status": "complete",
+      "sha256": "4dc327b76b2be96320602f6738f807e7a4d71bd0506e69c06fb6a34497cb7b2f"
+    },
+    "simulation/verilog/rtl/summary.json": {
+      "passed": true,
+      "status": "complete",
+      "sha256": "8dc547c49715a1cf2497443b05c973ac8fdd4314a0ab5c5a94a30c49c5ea93df"
+    }
+  },
+  "source_sha256": {
+    "flow/librelane/config.yaml": "ee026baf88c70d42d7e51277db35f03fdf7ef92e8ebb7d530ac435110aed1788",
+    "flow/librelane/heichips26_template_large.def": "29284270d2fc2d7ff4fbffead6ca02e3c6cd5955c62adbd21b1acc3555e0fd2e",
+    "flow/librelane/heichips26_template_small.def": "5231d4303ddf690dcd11a037493c716b20e0058f348b77f674f0076379cd4acd",
+    "flow/librelane/heichips26_template_small_analog.def": "f2edf0f826f4c36b0ca2af891ffca19e0480c5f55303103f662c5ec9a7a0f320",
+    "flow/librelane/heichips26_template_tiny.def": "a5ab21b55c3c47752a8d754d1184ee0696c2a3d80ddb6d506ef57843a635db67",
+    "flow/librelane/heichips26_template_tiny_analog.def": "5921a1eb641447b5a20aacccb8f342ecb88c930dc06524df0e2de17e54e36f58",
+    "flow/librelane/impl.sdc": "585ebc55d96551fe3c7e77ddfca0845c77ae12b17530de261a4a99d70f45481b",
+    "flow/librelane/signoff.sdc": "281475fcdcd497191d07b868272b867216d97caca34bf30af7ca026ee9c7fe31",
+    "flow/librelane/timing_common.tcl": "d6d6980dd88498e3571e2d52475df23b2d2442c43d65a101020e6570b5fc8046",
+    "rtl/cell_map.v": "385be629306f889b1764a01bd60de0e514392a11a9780e34e7bef1295d0ef8e6",
+    "rtl/graded_fll_controller.v": "f0d44bfe4abefcec35ab6bb66152d5c01224edee45b97dee0bc07af842f317f8",
+    "rtl/heichips26_multimode_dll_small.sv": "99d56a02b50cc806be91a07c25e1b6f798c87124bdcfb8c9101bc3995966b64d",
+    "rtl/multimode_dll_small.v": "61bcc8818a69f8a4054facdce83cab16a15045efb72a24aa3db8c4b8ffd5c431",
+    "rtl/output_divider.v": "fd84614c2251b55d4dc21c41da8e8c2548e0191c9a5f19a46d09b3e94cc4e723",
+    "rtl/ring_oscillator.v": "4e44b58fdf032cfd4a00ce1c627a3dbd69f54ca0fde8d9e3df42ce93e9963a49",
+    "scripts/.sak-scripts-version": "226f40cf6be48c8f5ee459dc162d8b163049fdb9c726ee16ebcae23d3a62d21e",
+    "scripts/build_paths.py": "487ab922e6cd5c5c66ebbaad621e38f1a5fa9d4f3dfa007393e945bc968250ef",
+    "scripts/capture_waveforms.py": "67710ef72e61de8c384726331e0f80bbfa616b12aed65b04ab7811d382a3c00e",
+    "scripts/check_layout.py": "b4f7f3594e488ffdb5f1aba3be8a7581dfe7db5d138e31b33c68f7ee765c10d0",
+    "scripts/check_physical_metrics.py": "10e006b76074b8b3a765787f9d657817ae872624ece1e382bf4213744d16cba8",
+    "scripts/check_qualification.py": "bb0f4ea3b2ed82b4b687f73ed68d8fb993643267a0d61b6395325128ec0bf2de",
+    "scripts/check_reset_electrical.py": "a05e46cf81d5923de91956b51475ab4b3ad952ea88bfa47c1fd7db72081773e7",
+    "scripts/check_spice_convergence.py": "a2a67a47f75a5d7607f0b55903daa40ffcd2f8b82c6290a2585c75c62655495e",
+    "scripts/check_spice_results.py": "2a19e8b57cd985b8d7b5335856296d7898c1cb02559be13c86bf68fd03e94582",
+    "scripts/check_structure.py": "b7115b1531471011f70a355014fe63f3b67613062be982c9a55c89737aeb1b88",
+    "scripts/export_placement.py": "6bb68ecf0c91308f0998225d462fb42da94c4e91eeb66ba4f13f322d40a8bd80",
+    "scripts/export_ring_spice.py": "7ce735595c53dd5a0d6287f52934a5385ef47ee8a6f25f465434408adb2bbf69",
+    "scripts/extract_ring_view.py": "431bd7de1dd8e5ea0e1e2ec09172d6491e9d508d3f99fe7f752f7567d81e8e32",
+    "scripts/manage_outputs.py": "b054cdf492d4b47ea9b6463c6a3a955183e900a060af7d364d6c9cb726c9999b",
+    "scripts/prepare_sdf.py": "a8e4898ace570db48d78bfc9e33b18e8e86c78ffa3eb70b59d3bfff638bb7ecc",
+    "scripts/report.py": "02ac43cb996ef1aaa33d805aa1513fbe698560b2b7f5866c6682fc6afbf8c4d5",
+    "scripts/ring_region.py": "b466389886d8f077d0f107d87d337d3d4305a021efb39d2846ac7073b6dd5fc4",
+    "scripts/run_backend.py": "e33dffec258cef63a59bd49a142d5a2441b0940365af4970c4f16c5cd07c3594",
+    "scripts/run_regressions.py": "01b443a0bb86029d4bc363d6dc143149ac0cdcef65c5d4d8260963334a9a9a60",
+    "scripts/run_spice.py": "b61ee0e4f04ac19912a2812155ed82d367044067bc6c1c94a6a66fa483c25696",
+    "scripts/run_structure_check.py": "cdae77a7d1acf663b408973c0160f26e78c2d182db7e69ef399714109b56190a",
+    "scripts/run_verilog.py": "b413a2c415e372d1a313394990e2be93dda70f2f1accb4a23efe4b3f019fa260",
+    "scripts/sak-open.py": "3da57eafcacc97037fc314a74c9c24a479ef673f694944b783d049c01702515b",
+    "scripts/sak-pex.sh": "1a1536454fdd3ba01d795daacc65aa004f8493bed69aaf19090d56cc17043fcf",
+    "scripts/scalarize_sim.py": "c67e3ceab7235bbe53bfab0d5a5c54d5083534f6d92367cb9c2514e7d17a6ccf",
+    "scripts/stream_ring_view.py": "daf375989403e7bec9f5a92b9f39e6ef3ebcf3779b3d768f7740bd35ece6b481",
+    "scripts/view_waveform.py": "bef18ba12cd9a2d218d5e6edb7c75dec51b04c27e16d0ca5552bba6255c15e0b",
+    "testbenches/ngspice/oscillator.json": "cecb54e0c5f43f83e50a7ff95c3d083df8a50adce7578c375685871b50dc8362",
+    "testbenches/ngspice/spiceinit.template": "d9c199775724d0f46735be0d93d1c5aae02e2d6767dc2baba2f3ee93d56713db",
+    "testbenches/python/test_measurements.py": "0ee3a97b07842ee5a65f49c326efc4c11e173ad9b9d3bc9f9fcc845deeec7a89",
+    "testbenches/python/test_regression_order.py": "85bdebec3832f872490c0b2989aa4ef294ef84b4f5bea19cb80d00079530ea76",
+    "testbenches/python/test_simulation_runner.py": "4e60c95c9f0116bc0f79c9619c21b9ec99cb884c2d6dd5724f611aaaff3463b8",
+    "testbenches/python/test_spice_runner.py": "ae85e8f6630e240ce68c94f1c8754c25cb0ef2c8764b9d702666c2d8b053cc3f",
+    "testbenches/verilog/divider_tb.sv": "688c32efb7e91c223f1d4860fd83cb26eb10e021b99f7fbefb1f48b0024a9fcd",
+    "testbenches/verilog/frequency_table.vh": "3d7a4a746044bd19574eeeb6c5bd6ce21611931e33dc102fdf0d13e1fc0eb19d",
+    "testbenches/verilog/ring_model.vh": "57e5c627d62c52f48a0139648571689055fd5dac382cf46ecc53a699a7a18eb5",
+    "testbenches/verilog/small_dll_tb.sv": "f36bdbe52947184ff7cfd4980b68d715108e3191eb5f9689adf8fe8760d8e2ee",
+    "testbenches/verilog/trim_map.vh": "1df2b6a1544205f58c8919826c842eba37c4e827a475ced0a68ce5839a2e6029",
+    "testbenches/verilog/wave_capture.sv": "122ec136178298f7e98b2d6b0468f5d6ade05608c849567c157dfb8a185e3763"
+  },
+  "published_sha256": {
+    "gds/heichips26_multimode_dll_small.gds": "e0b299b1b0ce0a736d110658a3aa3751c7b48dbf92fe653b7645bf566488a4f9",
+    "lef/heichips26_multimode_dll_small.lef": "7274b4b375935e40f56b9941a926cfb8206b95e16168e0436c9c6a435fcb7cdd",
+    "lib/nom_fast_1p32V_m40C/heichips26_multimode_dll_small__nom_fast_1p32V_m40C.lib": "157c58943fcf4cb94dc7b386f1cf954d37112b2e6717b1295d707c457041c414",
+    "lib/nom_slow_1p08V_125C/heichips26_multimode_dll_small__nom_slow_1p08V_125C.lib": "4664f1c0595896a699d0109b80c1cf4619475a8086b4048a5ab857ef94972e8d",
+    "lib/nom_typ_1p20V_25C/heichips26_multimode_dll_small__nom_typ_1p20V_25C.lib": "f35d208416e2b5eb1011b329e94de6a376b116b40cc7418e3b57a6273d7c79af",
+    "nl/heichips26_multimode_dll_small.nl.v": "1a56845366d31e227b0190bff075988d242f21815355ff8bf8636fcd97cad196",
+    "pnl/heichips26_multimode_dll_small.pnl.v": "deb2ca86c14e83f6348ad29ccf71bbd8d78ff292075cb8b052e239524278ff0e",
+    "render/heichips26_multimode_dll_small.png": "d50329eb9839ba50422fdd71e515c863800c469777b0d3ba0b56f8d024b2877e",
+    "spef/nom/heichips26_multimode_dll_small.nom.spef": "b08f7aa05f5d87fe172d32cd3bd273d858d4262582e69eb4732619511c040777",
+    "spice/heichips26_multimode_dll_small.spice": "040b23a4e4e29df1169e8bc51d8ea7b0ad77659d185750d63cfc7d367cd60007",
+    "vh/heichips26_multimode_dll_small.vh": "8a149edd949f73d7bcdc53bbfb86e60bc1febe716e9a8f4feecb8c7741dc83ee"
+  }
+}

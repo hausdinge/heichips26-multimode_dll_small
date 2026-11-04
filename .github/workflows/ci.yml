@@ -51,10 +51,10 @@ jobs:
       - name: Create Summary
         if: success() || failure()
         run: |
-          cat runs/*/*/summary.md >> $GITHUB_STEP_SUMMARY
+          cat build/precheck/runs/*/*/summary.md >> $GITHUB_STEP_SUMMARY
       - name: Upload Image
         if: success() || failure()
         uses: actions/upload-artifact@v7
         with:
           name: image
-          path: runs/*/*/*.png
+          path: build/precheck/runs/*/*/*.png

@@ -1,0 +1,89 @@
+{
+    "reset_ns": 10,
+    "warmup_ns": 80,
+    "measure_ns": 200,
+    "max_step_ps": 20,
+    "output_load_ff": 20,
+    "supply_ramp_ns": 1,
+    "corners": [
+        {
+            "name": "tt",
+            "model": "mos_tt",
+            "voltage": 1.2,
+            "temperature": 25
+        },
+        {
+            "name": "ss",
+            "model": "mos_ss",
+            "voltage": 1.08,
+            "temperature": 125
+        },
+        {
+            "name": "ff",
+            "model": "mos_ff",
+            "voltage": 1.32,
+            "temperature": -40
+        }
+    ],
+    "trim_levels": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39
+    ],
+    "transition_pairs": [
+        0,
+        12,
+        13,
+        25,
+        26,
+        38
+    ],
+    "update_periods_ns": [
+        10,
+        100
+    ],
+    "transition_updates": {
+        "10": 11,
+        "100": 3
+    },
+    "corner_max_step_ps": {
+        "ff": 10
+    }
+}
